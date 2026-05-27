@@ -188,6 +188,14 @@ const SUITS = [
   {id:'blue',        name:'Bright Blue',     hex:'#3a5f9e'},
   {id:'burgundy',    name:'Burgundy',        hex:'#5d2433'},
   {id:'olive',       name:'Olive',           hex:'#5c5d3a'},
+  {id:'rosegold',    name:'Rose Gold',       hex:'#c0857f'},
+  {id:'fuchsia',     name:'Fuchsia',         hex:'#c42a72'},
+  {id:'lightblue',   name:'Light Blue',      hex:'#a9c8e6'},
+  {id:'slateblue',   name:'Slate Blue',      hex:'#5d6e90'},
+  {id:'lightpink',   name:'Light Pink',      hex:'#e7b8c3'},
+  {id:'navycheck',   name:'Navy Checkered',  hex:'#27334f', neutral:true, pattern:'check'},
+  {id:'greycheck',   name:'Grey Checkered',  hex:'#70757d', neutral:true, pattern:'check'},
+  {id:'blackcheck',  name:'Black Checkered', hex:'#262629', neutral:true, pattern:'check'},
   {id:'blacktux',    name:'Black Tuxedo',    hex:'#16161a', neutral:true, tux:true},
   {id:'greytux',     name:'Light Grey Tux',  hex:'#b6bcc4', neutral:true, tux:true},
   {id:'burgundytux', name:'Burgundy Tuxedo', hex:'#5a2030', tux:true},
@@ -459,7 +467,7 @@ const byId=(arr,id)=>arr.find(x=>x.id===id);
 const state={ skin:'medium', mode:'suit', suit:'navy', shirt:'white', tie:'burgundy', view:'avatar' };
 
 /* ===================== FIGURE VIEWS + LOOK BAR ===================== */
-function figAvatar(suit,shirt,tie,skin,hair,tux){
+function figAvatar(suit,shirt,tie,skin,hair,tux,pat){
   const lapel = tux ? '#0c0c10' : suit;
   const lapels = tux ? `
     <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="${lapel}"/>
@@ -490,7 +498,7 @@ function figAvatar(suit,shirt,tie,skin,hair,tux){
     <ellipse cx="160" cy="128" rx="4" ry="5" fill="#3a2e28"/><ellipse cx="200" cy="128" rx="4" ry="5" fill="#3a2e28"/>
     <path d="M177,138 Q174,150 180,152" stroke="#000" stroke-opacity=".14" stroke-width="3" fill="none" stroke-linecap="round"/>
     <path d="M168,162 Q180,168 192,162" stroke="#000" stroke-opacity=".22" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-  return `<defs>
+  return `<defs>${pat||''}
     <radialGradient id="bg" cx="50%" cy="38%" r="62%"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
     <radialGradient id="floor" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="rgba(70,55,80,.18)"/><stop offset="1" stop-color="rgba(70,55,80,0)"/></radialGradient>
     <linearGradient id="jshade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient>
@@ -513,7 +521,7 @@ function figAvatar(suit,shirt,tie,skin,hair,tux){
     <g transform="translate(245,286)"><path d="M-16,4 L16,4 L14,-2 L-14,-2 Z" fill="#fbfaf6"/><path d="M-12,-2 L-4,-14 L0,-2 Z" fill="#fbfaf6"/><path d="M-2,-2 L6,-16 L10,-2 Z" fill="#f3f1ea"/></g>
     </g>`;
 }
-function figFull(suit,shirt,tie,skin,hair,tux,trouser){
+function figFull(suit,shirt,tie,skin,hair,tux,trouser,pat){
   trouser=trouser||suit;
   const lapel=tux?'#0c0c10':suit;
   const stripe=tux?`<rect x="63" y="304" width="3.5" height="194" fill="#0c0c10"/><rect x="153.5" y="304" width="3.5" height="194" fill="#0c0c10"/>`:'';
@@ -531,7 +539,7 @@ function figFull(suit,shirt,tie,skin,hair,tux,trouser){
     <path d="M110,131 L88,123 L88,141 Z" fill="${tie}"/><path d="M110,131 L132,123 L132,141 Z" fill="${tie}"/>`:`
     <path d="M101,124 L119,124 L116,144 L104,144 Z" fill="${tie}"/>
     <path d="M104,144 L116,144 L121,220 L110,244 L99,220 Z" fill="${tie}"/>`;
-  return `<defs>
+  return `<defs>${pat||''}
     <radialGradient id="f2bg" cx="50%" cy="22%" r="74%"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
     <radialGradient id="f2floor" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="rgba(70,55,80,.20)"/><stop offset="1" stop-color="rgba(70,55,80,0)"/></radialGradient>
     <linearGradient id="satin" x1="0" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".42" stop-color="#fff" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".14"/></linearGradient>
@@ -565,10 +573,10 @@ function figFull(suit,shirt,tie,skin,hair,tux,trouser){
       <path d="M136,200 l13,0 l-2,-11 l-4.5,7 l-3,-8 l-3.5,12 Z" fill="#fbfaf6"/>
     </g>`;
 }
-function figFlat(suit,shirt,tie,skin,tux){
+function figFlat(suit,shirt,tie,skin,tux,pat){
   const lap=tux?'#0c0c10':'#000', lapOp=tux?'1':'.13';
   const T='font-family="-apple-system,sans-serif" font-size="14" font-weight="700" fill="#8a8f9b" text-anchor="middle"';
-  return `<defs>
+  return `<defs>${pat||''}
     <linearGradient id="fl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".10"/></linearGradient>
     <filter id="fls" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(40,30,50,.16)"/></filter></defs>
     <g filter="url(#fls)" transform="translate(100,118) scale(0.6)">
@@ -597,17 +605,19 @@ function figFlat(suit,shirt,tie,skin,tux){
 function figSwatch(su,sh,ti,sk){
   const t=[['Skin',sk],['Suit',su],['Shirt',sh],['Tie',ti]];
   return `<div class="swwrap">`+t.map(([cat,o])=>`
-    <div class="sw" style="background:${o?o.hex:'#ddd'}"><small>${cat}</small><b>${o?o.name:'—'}</b></div>`).join('')+`</div>`;
+    <div class="sw" style="${swatchStyle(o)}"><small>${cat}</small><b>${o?o.name:'—'}</b></div>`).join('')+`</div>`;
 }
 function renderStage(){
   const su=byId(SUITS,state.suit), sh=byId(SHIRTS,state.shirt), ti=byId(TIES,state.tie), sk=byId(SKINS,state.skin);
-  const S=su?su.hex:'#444', H=sh?sh.hex:'#eee', T=ti?ti.hex:'#888', K=sk?sk.hex:'#d9a980', hair=sk?sk.hair:'#3a2a1e', tux=!!(su&&su.tux);
+  const base=su?su.hex:'#444', checked=!!(su&&su.pattern==='check');
+  const S=checked?'url(#suitpat)':base, H=sh?sh.hex:'#eee', T=ti?ti.hex:'#888', K=sk?sk.hex:'#d9a980', hair=sk?sk.hair:'#3a2a1e', tux=!!(su&&su.tux);
+  const pat=checked?`<pattern id="suitpat" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" fill="${base}"/><path d="M0 0H22M0 0V22" stroke="rgba(255,255,255,.18)" stroke-width="1.6"/><path d="M11 0V22M0 11H22" stroke="rgba(255,255,255,.08)" stroke-width="1"/></pattern>`:'';
   const trouser=(su&&su.id==='whitetux')?'#1b1b22':S;   /* white dinner jacket = black trousers */
   let html;
-  if(state.view==='full')        html=`<svg class="figure figfull" viewBox="0 0 220 540">${figFull(S,H,T,K,hair,tux,trouser)}</svg>`;
-  else if(state.view==='flatlay')html=`<svg class="figure" viewBox="0 0 360 400">${figFlat(S,H,T,K,tux)}</svg>`;
+  if(state.view==='full')        html=`<svg class="figure figfull" viewBox="0 0 220 540">${figFull(S,H,T,K,hair,tux,trouser,pat)}</svg>`;
+  else if(state.view==='flatlay')html=`<svg class="figure" viewBox="0 0 360 400">${figFlat(S,H,T,K,tux,pat)}</svg>`;
   else if(state.view==='swatch') html=figSwatch(su,sh,ti,sk);
-  else                           html=`<svg class="figure" viewBox="0 0 360 430">${figAvatar(S,H,T,K,hair,tux)}</svg>`;
+  else                           html=`<svg class="figure" viewBox="0 0 360 430">${figAvatar(S,H,T,K,hair,tux,pat)}</svg>`;
   document.getElementById('stage').innerHTML=html;
   [...document.querySelectorAll('.vbtn')].forEach(b=>b.classList.toggle('active', b.dataset.view===state.view));
 }
@@ -643,7 +653,7 @@ function renderLookBar(){
   document.getElementById('overallWhy').innerHTML = e ? `${e[0]} <span class="src">— ${e[1]}</span>` : '';
   const rows=[['Skin',byId(SKINS,state.skin)],['Suit',byId(SUITS,state.suit)],['Shirt',byId(SHIRTS,state.shirt)],['Tie',byId(TIES,state.tie)]];
   document.getElementById('lookRows').innerHTML=rows.map(([l,o])=>`
-    <div class="look-row"><div class="sw" style="background:${o?o.hex:'#ddd'}"></div>
+    <div class="look-row"><div class="sw" style="${swatchStyle(o)}"></div>
     <div><div class="lbl">${l}</div><div class="val">${o?o.name:'—'}</div></div></div>`).join('');
 }
 
@@ -655,17 +665,23 @@ function renderSkin(){
 }
 function renderTabs(){ [...document.querySelectorAll('.tab')].forEach(t=>t.classList.toggle('active',t.dataset.mode===state.mode)); }
 
+/* swatch background — adds a windowpane check grid for checkered suits */
+function swatchStyle(o){
+  if(o && o.pattern==='check')
+    return `background-color:${o.hex};background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.24) 0 1.5px,transparent 1.5px 11px),repeating-linear-gradient(90deg,rgba(255,255,255,.24) 0 1.5px,transparent 1.5px 11px)`;
+  return `background:${o?o.hex:'#ddd'}`;
+}
 function recItem(o,tier,why,src,activeId){
   return `<div class="rec-item ${activeId===o.id?'active':''}" data-recid="${o.id}">
-    <div class="sw" style="background:${o.hex}"></div>
+    <div class="sw" style="${swatchStyle(o)}"></div>
     <div class="info"><div class="nm">${o.name}</div><div class="why">${why}${src?` <span class="src">— ${src}</span>`:''}</div></div>
     <div class="tag t${tier}">${TIER[tier]}</div></div>`;
 }
 function pickGrid(items,activeId){
   return `<div class="pick-grid">`+items.map(o=>`
     <div class="pick ${activeId===o.id?'active':''}" data-pickid="${o.id}">
-      <div class="chip" style="background:${o.hex}"></div>
-      <div class="nm">${o.name}</div>${o.tux?'<div class="tux">TUX</div>':''}
+      <div class="chip" style="${swatchStyle(o)}"></div>
+      <div class="nm">${o.name}</div>${o.tux?'<div class="tux">TUX</div>':o.pattern?'<div class="tux">CHECK</div>':''}
     </div>`).join('')+`</div>`;
 }
 /* weakest-link aware: a piece that clashes with EITHER side is rated down */
@@ -732,7 +748,7 @@ function matrix(p){
   let body='';
   SUITS.forEach(su=>{
     const ss=scoreSkinSuit(sk,su), dim=toTier(ss)===0?'dim':'', star=toTier(ss)===2?'<span class="star">★</span>':'';
-    body+=`<tr class="mx-row ${dim}"><td><div class="mx-rowhead"><div class="chip" style="background:${su.hex}"></div><div class="t">${su.name} ${star}</div></div></td>`;
+    body+=`<tr class="mx-row ${dim}"><td><div class="mx-rowhead"><div class="chip" style="${swatchStyle(su)}"></div><div class="t">${su.name} ${star}</div></div></td>`;
     SHIRTS.forEach(sh=>{
       const tier=toTier(scoreSuitShirt(su,sh)), bt=bestTie(su,sh);
       const sel=(state.suit===su.id&&state.shirt===sh.id)?'sel':'';
