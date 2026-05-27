@@ -58,8 +58,16 @@
 
   .look-card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 18px 20px; position:sticky; top:10px; box-shadow:var(--shadow);}
   @media (max-width:880px){ .look-card{position:static;} }
-  .stage{background:linear-gradient(180deg,#faf8f4,#efeaf2); border-radius:16px; padding:6px 0 0; overflow:hidden;}
-  .figure{width:100%; max-width:260px; display:block; margin:0 auto;}
+  .viewsw{display:flex; gap:5px; background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:4px; margin:0 0 12px;}
+  .vbtn{flex:1; text-align:center; padding:8px 4px; border-radius:9px; border:none; background:transparent; color:var(--muted); font:700 12px -apple-system,sans-serif; cursor:pointer; transition:.12s;}
+  .vbtn.active{background:#fff; color:var(--ink); box-shadow:0 2px 6px rgba(60,50,70,.10);}
+  .stage{background:linear-gradient(180deg,#faf8f4,#efeaf2); border-radius:16px; padding:8px 0; overflow:hidden; display:flex; align-items:center; justify-content:center; min-height:320px;}
+  .figure{width:100%; max-width:262px; display:block; margin:0 auto;}
+  .figfull{max-width:152px;}
+  .swwrap{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px; width:100%;}
+  .sw{height:100px; border-radius:14px; position:relative; box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);}
+  .sw b{position:absolute; left:9px; bottom:9px; background:rgba(255,255,255,.92); color:var(--ink); font:800 12px -apple-system,sans-serif; padding:3px 10px; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,.08);}
+  .sw small{position:absolute; right:9px; top:9px; font:800 9px -apple-system,sans-serif; letter-spacing:.6px; text-transform:uppercase; color:rgba(43,47,58,.55); background:rgba(255,255,255,.78); padding:2px 7px; border-radius:7px;}
   .rating{display:flex; align-items:center; justify-content:center; gap:9px; margin:14px 0 14px; font-size:14px; font-weight:700;}
   .rating .lab{color:var(--muted); font-weight:600; font-size:13px;}
   .pill{padding:4px 14px; border-radius:999px; font-size:13px; font-weight:700;}
@@ -143,9 +151,13 @@
 
   <div class="layout">
     <div class="look-card">
-      <div class="stage">
-        <svg id="figure" class="figure" viewBox="0 0 360 430" aria-label="Outfit preview"></svg>
+      <div class="viewsw" id="viewSwitch">
+        <button class="vbtn" data-view="avatar">Avatar</button>
+        <button class="vbtn" data-view="full">Full</button>
+        <button class="vbtn" data-view="flatlay">Flat-lay</button>
+        <button class="vbtn" data-view="swatch">Swatches</button>
       </div>
+      <div class="stage" id="stage" aria-label="Outfit preview"></div>
       <div class="rating" id="rating"></div>
       <div class="look-rows" id="lookRows"></div>
     </div>
@@ -350,11 +362,11 @@ function rankBy(items,fn){
 
 /* ===================== STATE ===================== */
 const byId=(arr,id)=>arr.find(x=>x.id===id);
-const state={ skin:'medium', mode:'suit', suit:'navy', shirt:'white', tie:'burgundy' };
+const state={ skin:'medium', mode:'suit', suit:'navy', shirt:'white', tie:'burgundy', view:'avatar' };
 
-/* ===================== FIGURE + LOOK BAR ===================== */
-function buildFigure(suit,shirt,tie,skin,hair,tux){
-  const lapel = tux ? '#0c0c10' : suit;          /* tuxedos get black satin lapels */
+/* ===================== FIGURE VIEWS + LOOK BAR ===================== */
+function figAvatar(suit,shirt,tie,skin,hair,tux){
+  const lapel = tux ? '#0c0c10' : suit;
   const lapels = tux ? `
     <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="${lapel}"/>
     <path d="M226,196 L180,284 L180,306 L241,240 C237,222 232,206 226,196 Z" fill="${lapel}"/>
@@ -370,68 +382,138 @@ function buildFigure(suit,shirt,tie,skin,hair,tux){
     <path d="M226,196 L180,284" stroke="#000" stroke-opacity=".12" stroke-width="3" fill="none"/>`;
   const necktie = tux ? `
     <rect x="172" y="196" width="16" height="20" rx="4" fill="${tie}"/>
-    <path d="M180,206 L148,190 L148,222 Z" fill="${tie}"/>
-    <path d="M180,206 L212,190 L212,222 Z" fill="${tie}"/>
-    <path d="M180,206 L148,190 L148,222 Z" fill="#000" opacity=".16"/>
-    <path d="M180,206 L212,190 L212,222 Z" fill="#fff" opacity=".07"/>
+    <path d="M180,206 L148,190 L148,222 Z" fill="${tie}"/><path d="M180,206 L212,190 L212,222 Z" fill="${tie}"/>
+    <path d="M180,206 L148,190 L148,222 Z" fill="#000" opacity=".16"/><path d="M180,206 L212,190 L212,222 Z" fill="#fff" opacity=".07"/>
     <rect x="172" y="196" width="16" height="20" rx="4" fill="#000" opacity=".10"/>` : `
     <path d="M166,192 L194,192 L190,222 L170,222 Z" fill="${tie}"/>
     <path d="M170,222 L190,222 L199,320 L180,360 L161,320 Z" fill="${tie}"/>
     <path d="M170,222 L190,222 L199,320 L180,360 L161,320 Z" fill="url(#tieshade)"/>
     <path d="M180,194 L187,205 L180,212 L173,205 Z" fill="#000" opacity=".20"/>
-    <circle cx="180" cy="302" r="3" fill="rgba(0,0,0,.32)"/>
-    <circle cx="180" cy="334" r="3" fill="rgba(0,0,0,.32)"/>`;
-  return `
-  <defs>
-    <radialGradient id="bg" cx="50%" cy="38%" r="62%">
-      <stop offset="0" stop-color="#ffffff" stop-opacity=".7"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="floor" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="rgba(70,55,80,.18)"/><stop offset="1" stop-color="rgba(70,55,80,0)"/>
-    </radialGradient>
-    <linearGradient id="jshade" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".14"/>
-    </linearGradient>
-    <linearGradient id="tieshade" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/>
-    </linearGradient>
-    <linearGradient id="satin" x1="0" y1="0" x2="0.85" y2="1">
-      <stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".42" stop-color="#fff" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".14"/>
-    </linearGradient>
-    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(40,30,50,.22)"/>
-    </filter>
-  </defs>
-  <circle cx="180" cy="170" r="150" fill="url(#bg)"/>
-  <ellipse cx="180" cy="412" rx="130" ry="15" fill="url(#floor)"/>
-  <g filter="url(#soft)">
-    <ellipse cx="125" cy="118" rx="11" ry="15" fill="${skin}"/>
-    <ellipse cx="235" cy="118" rx="11" ry="15" fill="${skin}"/>
-    <path d="M163,154 L197,154 L201,200 L159,200 Z" fill="${skin}"/>
-    <path d="M163,154 L197,154 L198,170 C190,182 170,182 162,170 Z" fill="#000" opacity=".13"/>
+    <circle cx="180" cy="302" r="3" fill="rgba(0,0,0,.32)"/><circle cx="180" cy="334" r="3" fill="rgba(0,0,0,.32)"/>`;
+  const face = `
+    <path d="M150,116 Q160,112 170,116" stroke="${hair}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".85"/>
+    <path d="M190,116 Q200,112 210,116" stroke="${hair}" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".85"/>
+    <ellipse cx="160" cy="128" rx="4" ry="5" fill="#3a2e28"/><ellipse cx="200" cy="128" rx="4" ry="5" fill="#3a2e28"/>
+    <path d="M177,138 Q174,150 180,152" stroke="#000" stroke-opacity=".14" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M168,162 Q180,168 192,162" stroke="#000" stroke-opacity=".22" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  return `<defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="62%"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="floor" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="rgba(70,55,80,.18)"/><stop offset="1" stop-color="rgba(70,55,80,0)"/></radialGradient>
+    <linearGradient id="jshade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient>
+    <linearGradient id="tieshade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient>
+    <linearGradient id="satin" x1="0" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".42" stop-color="#fff" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".14"/></linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(40,30,50,.22)"/></filter></defs>
+    <circle cx="180" cy="170" r="150" fill="url(#bg)"/><ellipse cx="180" cy="412" rx="130" ry="15" fill="url(#floor)"/>
+    <g filter="url(#soft)">
+    <ellipse cx="125" cy="118" rx="11" ry="15" fill="${skin}"/><ellipse cx="235" cy="118" rx="11" ry="15" fill="${skin}"/>
+    <path d="M163,154 L197,154 L201,200 L159,200 Z" fill="${skin}"/><path d="M163,154 L197,154 L198,170 C190,182 170,182 162,170 Z" fill="#000" opacity=".13"/>
     <path d="M120,110 C120,64 144,44 180,44 C216,44 240,64 240,110 C240,152 214,174 180,174 C146,174 120,152 120,110 Z" fill="${skin}"/>
+    ${face}
     <path d="M116,118 C112,62 144,38 180,38 C218,38 246,64 244,120 C239,98 226,88 214,92 C206,70 190,64 180,66 C167,62 150,72 146,96 C132,100 122,108 116,118 Z" fill="${hair}"/>
-    <path d="M116,118 C112,62 144,38 180,38 C218,38 246,64 244,120 C239,98 226,88 214,92 C206,70 190,64 180,66 C167,62 150,72 146,96 C132,100 122,108 116,118 Z" fill="#fff" opacity=".06"/>
     <path d="M146,196 L214,196 L222,230 L180,322 L138,230 Z" fill="${shirt}"/>
-    <path d="M147,194 L181,256 L170,196 Z" fill="${shirt}"/>
-    <path d="M213,194 L179,256 L190,196 Z" fill="${shirt}"/>
-    <path d="M147,194 L181,256 L170,196 Z" fill="#000" opacity=".08"/>
-    <path d="M213,194 L179,256 L190,196 Z" fill="#000" opacity=".04"/>
+    <path d="M147,194 L181,256 L170,196 Z" fill="${shirt}"/><path d="M213,194 L179,256 L190,196 Z" fill="${shirt}"/>
+    <path d="M147,194 L181,256 L170,196 Z" fill="#000" opacity=".08"/><path d="M213,194 L179,256 L190,196 Z" fill="#000" opacity=".04"/>
     <path d="M52,430 L60,292 C64,244 92,218 134,196 L180,284 L226,196 C268,218 296,244 300,292 L308,430 Z" fill="${suit}"/>
     <path d="M52,430 L60,292 C64,244 92,218 134,196 L180,284 L226,196 C268,218 296,244 300,292 L308,430 Z" fill="url(#jshade)"/>
-    ${lapels}
-    ${necktie}
-    <g transform="translate(245,286)">
-      <path d="M-16,4 L16,4 L14,-2 L-14,-2 Z" fill="#fbfaf6"/>
-      <path d="M-12,-2 L-4,-14 L0,-2 Z" fill="#fbfaf6"/>
-      <path d="M-2,-2 L6,-16 L10,-2 Z" fill="#f3f1ea"/>
-    </g>
-  </g>`;
+    ${lapels}${necktie}
+    <g transform="translate(245,286)"><path d="M-16,4 L16,4 L14,-2 L-14,-2 Z" fill="#fbfaf6"/><path d="M-12,-2 L-4,-14 L0,-2 Z" fill="#fbfaf6"/><path d="M-2,-2 L6,-16 L10,-2 Z" fill="#f3f1ea"/></g>
+    </g>`;
 }
-function renderFigure(){
+function figFull(suit,shirt,tie,skin,hair,tux){
+  const lapel=tux?'#0c0c10':suit;
+  const stripe=tux?`<rect x="63" y="304" width="3.5" height="194" fill="#0c0c10"/><rect x="153.5" y="304" width="3.5" height="194" fill="#0c0c10"/>`:'';
+  const lapels=tux?`
+    <path d="M88,124 L110,214 L110,228 L74,170 C77,154 82,138 88,124 Z" fill="${lapel}"/>
+    <path d="M132,124 L110,214 L110,228 L146,170 C143,154 138,138 132,124 Z" fill="${lapel}"/>
+    <path d="M88,124 L110,214 L110,228 L74,170 C77,154 82,138 88,124 Z" fill="url(#satin)"/>
+    <path d="M132,124 L110,214 L110,228 L146,170 C143,154 138,138 132,124 Z" fill="url(#satin)"/>`:`
+    <path d="M88,124 L110,214 L110,228 L74,170 C77,154 82,138 88,124 Z" fill="${lapel}"/>
+    <path d="M132,124 L110,214 L110,228 L146,170 C143,154 138,138 132,124 Z" fill="${lapel}"/>
+    <path d="M88,124 L110,214 L110,228 L74,170 C77,154 82,138 88,124 Z" fill="#000" opacity=".10"/>
+    <path d="M132,124 L110,214 L110,228 L146,170 C143,154 138,138 132,124 Z" fill="#000" opacity=".17"/>`;
+  const necktie=tux?`
+    <rect x="104" y="124" width="12" height="14" rx="3" fill="${tie}"/>
+    <path d="M110,131 L88,123 L88,141 Z" fill="${tie}"/><path d="M110,131 L132,123 L132,141 Z" fill="${tie}"/>`:`
+    <path d="M101,124 L119,124 L116,144 L104,144 Z" fill="${tie}"/>
+    <path d="M104,144 L116,144 L121,220 L110,244 L99,220 Z" fill="${tie}"/>`;
+  return `<defs>
+    <radialGradient id="f2bg" cx="50%" cy="22%" r="74%"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="f2floor" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="rgba(70,55,80,.20)"/><stop offset="1" stop-color="rgba(70,55,80,0)"/></radialGradient>
+    <linearGradient id="satin" x1="0" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".42" stop-color="#fff" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".14"/></linearGradient>
+    <linearGradient id="f2j" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient>
+    <filter id="f2soft" x="-40%" y="-12%" width="180%" height="124%"><feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="rgba(40,30,50,.20)"/></filter></defs>
+    <ellipse cx="110" cy="522" rx="68" ry="11" fill="url(#f2floor)"/><circle cx="110" cy="112" r="100" fill="url(#f2bg)"/>
+    <g filter="url(#f2soft)">
+      <path d="M60,498 L86,498 L88,514 C88,521 78,523 62,523 L46,523 C43,511 50,501 60,498 Z" fill="#241a12"/>
+      <path d="M160,498 L134,498 L132,514 C132,521 142,523 158,523 L174,523 C177,511 170,501 160,498 Z" fill="#241a12"/>
+      <path d="M72,300 L63,500 L89,500 L106,338 L106,300 Z" fill="${suit}"/>
+      <path d="M148,300 L157,500 L131,500 L114,338 L114,300 Z" fill="${suit}"/>
+      <path d="M72,300 L63,500 L89,500 L106,338 L106,300 Z" fill="#000" opacity=".05"/>
+      <path d="M148,300 L157,500 L131,500 L114,338 L114,300 Z" fill="#000" opacity=".12"/>
+      ${stripe}
+      <path d="M70,150 C56,155 51,172 54,196 L59,300 L82,300 L77,162 Z" fill="${suit}"/>
+      <path d="M150,150 C164,155 169,172 166,196 L161,300 L138,300 L143,162 Z" fill="${suit}"/>
+      <path d="M70,150 C56,155 51,172 54,196 L59,300 L82,300 L77,162 Z" fill="#fff" opacity=".05"/>
+      <path d="M150,150 C164,155 169,172 166,196 L161,300 L138,300 L143,162 Z" fill="#000" opacity=".12"/>
+      <circle cx="70" cy="304" r="9" fill="${skin}"/><circle cx="150" cy="304" r="9" fill="${skin}"/>
+      <path d="M100,80 L120,80 L121,118 L99,118 Z" fill="${skin}"/><path d="M100,80 L120,80 L120,96 C114,104 106,104 100,96 Z" fill="#000" opacity=".12"/>
+      <ellipse cx="110" cy="54" rx="26" ry="30" fill="${skin}"/>
+      <path d="M84,58 C81,24 97,12 110,12 C125,12 142,28 139,60 C136,44 127,38 119,41 C113,26 103,26 97,34 C90,36 85,46 84,58 Z" fill="${hair}"/>
+      <path d="M92,122 L128,122 L134,150 L110,228 L86,150 Z" fill="${shirt}"/>
+      <path d="M92,122 L111,182 L104,124 Z" fill="${shirt}"/><path d="M128,122 L109,182 L116,124 Z" fill="${shirt}"/>
+      <path d="M74,302 L70,150 C72,132 90,122 110,120 C130,122 148,132 150,150 L146,302 Z" fill="${suit}"/>
+      <path d="M74,302 L70,150 C72,132 90,122 110,120 C130,122 148,132 150,150 L146,302 Z" fill="url(#f2j)"/>
+      <path d="M73,152 C78,168 80,184 77,202" stroke="#000" stroke-opacity=".10" stroke-width="7" fill="none"/>
+      <path d="M147,152 C142,168 140,184 143,202" stroke="#000" stroke-opacity=".14" stroke-width="7" fill="none"/>
+      ${lapels}${necktie}
+      <circle cx="110" cy="248" r="2.6" fill="rgba(0,0,0,.3)"/><circle cx="110" cy="278" r="2.6" fill="rgba(0,0,0,.3)"/>
+      <path d="M136,200 l13,0 l-2,-11 l-4.5,7 l-3,-8 l-3.5,12 Z" fill="#fbfaf6"/>
+    </g>`;
+}
+function figFlat(suit,shirt,tie,skin,tux){
+  const lap=tux?'#0c0c10':'#000', lapOp=tux?'1':'.13';
+  const T='font-family="-apple-system,sans-serif" font-size="14" font-weight="700" fill="#8a8f9b" text-anchor="middle"';
+  return `<defs>
+    <linearGradient id="fl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".10"/></linearGradient>
+    <filter id="fls" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="rgba(40,30,50,.16)"/></filter></defs>
+    <g filter="url(#fls)" transform="translate(100,118) scale(0.6)">
+      <path d="M-78,150 L-66,8 C-62,-14 -40,-30 -16,-36 L0,30 L16,-36 C40,-30 62,-14 66,8 L78,150 Z" fill="${suit}"/>
+      <path d="M-78,150 L-66,8 C-62,-14 -40,-30 -16,-36 L0,30 L16,-36 C40,-30 62,-14 66,8 L78,150 Z" fill="url(#fl)"/>
+      <path d="M-16,-36 L0,30 L0,46 L-44,-4 C-40,-18 -28,-30 -16,-36 Z" fill="${lap}" opacity="${lapOp}"/>
+      <path d="M16,-36 L0,30 L0,46 L44,-4 C40,-18 28,-30 16,-36 Z" fill="${lap}" opacity="${lapOp}"/>
+      <ellipse cx="0" cy="-40" rx="13" ry="8" fill="${suit}"/>
+    </g>
+    <text x="100" y="232" ${T}>Suit</text>
+    <g filter="url(#fls)" transform="translate(260,118) scale(0.6)">
+      <path d="M-58,120 L-54,4 C-52,-12 -38,-22 -22,-26 L0,8 L22,-26 C38,-22 52,-12 54,4 L58,120 Z" fill="${shirt}"/>
+      <path d="M-22,-26 L0,8 L-18,-6 L-30,-18 C-28,-22 -25,-25 -22,-26 Z" fill="#000" opacity=".06"/>
+      <path d="M22,-26 L0,8 L18,-6 L30,-18 C28,-22 25,-25 22,-26 Z" fill="#000" opacity=".06"/>
+      <line x1="0" y1="14" x2="0" y2="116" stroke="#000" stroke-opacity=".06" stroke-width="2"/>
+    </g>
+    <text x="260" y="232" ${T}>Shirt</text>
+    <g filter="url(#fls)" transform="translate(100,300)">
+      ${tux?`<rect x="-9" y="-13" width="18" height="24" rx="4" fill="${tie}"/><path d="M0,-1 L-32,-16 L-32,14 Z" fill="${tie}"/><path d="M0,-1 L32,-16 L32,14 Z" fill="${tie}"/><path d="M0,-1 L-32,-16 L-32,14 Z" fill="#000" opacity=".12"/>`
+           :`<path d="M-10,-44 L10,-44 L7,-22 L-7,-22 Z" fill="${tie}"/><path d="M-7,-22 L7,-22 L13,40 L0,62 L-13,40 Z" fill="${tie}"/><path d="M-7,-22 L7,-22 L13,40 L0,62 L-13,40 Z" fill="#fff" opacity=".05"/>`}
+    </g>
+    <text x="100" y="384" ${T}>Tie</text>
+    <circle cx="260" cy="296" r="40" fill="${skin}" filter="url(#fls)"/>
+    <text x="260" y="384" ${T}>Skin</text>`;
+}
+function figSwatch(su,sh,ti,sk){
+  const t=[['Skin',sk],['Suit',su],['Shirt',sh],['Tie',ti]];
+  return `<div class="swwrap">`+t.map(([cat,o])=>`
+    <div class="sw" style="background:${o?o.hex:'#ddd'}"><small>${cat}</small><b>${o?o.name:'—'}</b></div>`).join('')+`</div>`;
+}
+function renderStage(){
   const su=byId(SUITS,state.suit), sh=byId(SHIRTS,state.shirt), ti=byId(TIES,state.tie), sk=byId(SKINS,state.skin);
-  document.getElementById('figure').innerHTML=buildFigure(
-    su?su.hex:'#444', sh?sh.hex:'#eee', ti?ti.hex:'#888', sk?sk.hex:'#d9a980', sk?sk.hair:'#3a2a1e', su&&su.tux);
+  const S=su?su.hex:'#444', H=sh?sh.hex:'#eee', T=ti?ti.hex:'#888', K=sk?sk.hex:'#d9a980', hair=sk?sk.hair:'#3a2a1e', tux=!!(su&&su.tux);
+  let html;
+  if(state.view==='full')        html=`<svg class="figure figfull" viewBox="0 0 220 540">${figFull(S,H,T,K,hair,tux)}</svg>`;
+  else if(state.view==='flatlay')html=`<svg class="figure" viewBox="0 0 360 400">${figFlat(S,H,T,K,tux)}</svg>`;
+  else if(state.view==='swatch') html=figSwatch(su,sh,ti,sk);
+  else                           html=`<svg class="figure" viewBox="0 0 360 430">${figAvatar(S,H,T,K,hair,tux)}</svg>`;
+  document.getElementById('stage').innerHTML=html;
+  [...document.querySelectorAll('.vbtn')].forEach(b=>b.classList.toggle('active', b.dataset.view===state.view));
 }
 function overall(){
   const p=[];
@@ -567,8 +649,12 @@ function matrix(p){
 }
 
 /* ===================== EVENTS ===================== */
-function rerender(){ renderSkin(); renderTabs(); renderPanel(); renderFigure(); renderLookBar(); }
-function refresh(){ renderPanel(); renderFigure(); renderLookBar(); }
+function rerender(){ renderSkin(); renderTabs(); renderPanel(); renderStage(); renderLookBar(); }
+function refresh(){ renderPanel(); renderStage(); renderLookBar(); }
+
+document.getElementById('viewSwitch').addEventListener('click',e=>{
+  const el=e.target.closest('[data-view]'); if(!el) return; state.view=el.dataset.view; renderStage();
+});
 
 document.getElementById('skinGrid').addEventListener('click',e=>{
   const el=e.target.closest('[data-skin]'); if(!el) return; state.skin=el.dataset.skin; rerender();
