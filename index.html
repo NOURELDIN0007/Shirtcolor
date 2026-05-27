@@ -353,7 +353,34 @@ const byId=(arr,id)=>arr.find(x=>x.id===id);
 const state={ skin:'medium', mode:'suit', suit:'navy', shirt:'white', tie:'burgundy' };
 
 /* ===================== FIGURE + LOOK BAR ===================== */
-function buildFigure(suit,shirt,tie,skin,hair){
+function buildFigure(suit,shirt,tie,skin,hair,tux){
+  const lapel = tux ? '#0c0c10' : suit;          /* tuxedos get black satin lapels */
+  const lapels = tux ? `
+    <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="${lapel}"/>
+    <path d="M226,196 L180,284 L180,306 L241,240 C237,222 232,206 226,196 Z" fill="${lapel}"/>
+    <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="url(#satin)"/>
+    <path d="M226,196 L180,284 L180,306 L241,240 C237,222 232,206 226,196 Z" fill="url(#satin)"/>
+    <path d="M134,196 L180,284" stroke="#fff" stroke-opacity=".28" stroke-width="2.4" fill="none"/>
+    <path d="M226,196 L180,284" stroke="#fff" stroke-opacity=".16" stroke-width="2.4" fill="none"/>` : `
+    <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="${lapel}"/>
+    <path d="M226,196 L180,284 L180,306 L241,240 C237,222 232,206 226,196 Z" fill="${lapel}"/>
+    <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="#000" opacity=".10"/>
+    <path d="M226,196 L180,284 L180,306 L241,240 C237,222 232,206 226,196 Z" fill="#000" opacity=".17"/>
+    <path d="M134,196 L180,284" stroke="#fff" stroke-opacity=".10" stroke-width="3" fill="none"/>
+    <path d="M226,196 L180,284" stroke="#000" stroke-opacity=".12" stroke-width="3" fill="none"/>`;
+  const necktie = tux ? `
+    <rect x="172" y="196" width="16" height="20" rx="4" fill="${tie}"/>
+    <path d="M180,206 L148,190 L148,222 Z" fill="${tie}"/>
+    <path d="M180,206 L212,190 L212,222 Z" fill="${tie}"/>
+    <path d="M180,206 L148,190 L148,222 Z" fill="#000" opacity=".16"/>
+    <path d="M180,206 L212,190 L212,222 Z" fill="#fff" opacity=".07"/>
+    <rect x="172" y="196" width="16" height="20" rx="4" fill="#000" opacity=".10"/>` : `
+    <path d="M166,192 L194,192 L190,222 L170,222 Z" fill="${tie}"/>
+    <path d="M170,222 L190,222 L199,320 L180,360 L161,320 Z" fill="${tie}"/>
+    <path d="M170,222 L190,222 L199,320 L180,360 L161,320 Z" fill="url(#tieshade)"/>
+    <path d="M180,194 L187,205 L180,212 L173,205 Z" fill="#000" opacity=".20"/>
+    <circle cx="180" cy="302" r="3" fill="rgba(0,0,0,.32)"/>
+    <circle cx="180" cy="334" r="3" fill="rgba(0,0,0,.32)"/>`;
   return `
   <defs>
     <radialGradient id="bg" cx="50%" cy="38%" r="62%">
@@ -367,6 +394,9 @@ function buildFigure(suit,shirt,tie,skin,hair){
     </linearGradient>
     <linearGradient id="tieshade" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/>
+    </linearGradient>
+    <linearGradient id="satin" x1="0" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".42" stop-color="#fff" stop-opacity="0"/><stop offset=".7" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".14"/>
     </linearGradient>
     <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(40,30,50,.22)"/>
@@ -389,18 +419,8 @@ function buildFigure(suit,shirt,tie,skin,hair){
     <path d="M213,194 L179,256 L190,196 Z" fill="#000" opacity=".04"/>
     <path d="M52,430 L60,292 C64,244 92,218 134,196 L180,284 L226,196 C268,218 296,244 300,292 L308,430 Z" fill="${suit}"/>
     <path d="M52,430 L60,292 C64,244 92,218 134,196 L180,284 L226,196 C268,218 296,244 300,292 L308,430 Z" fill="url(#jshade)"/>
-    <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="${suit}"/>
-    <path d="M226,196 L180,284 L180,306 L241,240 C237,222 232,206 226,196 Z" fill="${suit}"/>
-    <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="#000" opacity=".10"/>
-    <path d="M226,196 L180,284 L180,306 L241,240 C237,222 232,206 226,196 Z" fill="#000" opacity=".17"/>
-    <path d="M134,196 L180,284" stroke="#fff" stroke-opacity=".10" stroke-width="3" fill="none"/>
-    <path d="M226,196 L180,284" stroke="#000" stroke-opacity=".12" stroke-width="3" fill="none"/>
-    <path d="M166,192 L194,192 L190,222 L170,222 Z" fill="${tie}"/>
-    <path d="M170,222 L190,222 L199,320 L180,360 L161,320 Z" fill="${tie}"/>
-    <path d="M170,222 L190,222 L199,320 L180,360 L161,320 Z" fill="url(#tieshade)"/>
-    <path d="M180,194 L187,205 L180,212 L173,205 Z" fill="#000" opacity=".20"/>
-    <circle cx="180" cy="302" r="3" fill="rgba(0,0,0,.32)"/>
-    <circle cx="180" cy="334" r="3" fill="rgba(0,0,0,.32)"/>
+    ${lapels}
+    ${necktie}
     <g transform="translate(245,286)">
       <path d="M-16,4 L16,4 L14,-2 L-14,-2 Z" fill="#fbfaf6"/>
       <path d="M-12,-2 L-4,-14 L0,-2 Z" fill="#fbfaf6"/>
@@ -411,7 +431,7 @@ function buildFigure(suit,shirt,tie,skin,hair){
 function renderFigure(){
   const su=byId(SUITS,state.suit), sh=byId(SHIRTS,state.shirt), ti=byId(TIES,state.tie), sk=byId(SKINS,state.skin);
   document.getElementById('figure').innerHTML=buildFigure(
-    su?su.hex:'#444', sh?sh.hex:'#eee', ti?ti.hex:'#888', sk?sk.hex:'#d9a980', sk?sk.hair:'#3a2a1e');
+    su?su.hex:'#444', sh?sh.hex:'#eee', ti?ti.hex:'#888', sk?sk.hex:'#d9a980', sk?sk.hair:'#3a2a1e', su&&su.tux);
 }
 function overall(){
   const p=[];
