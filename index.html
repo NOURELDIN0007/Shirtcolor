@@ -172,10 +172,10 @@
 <script>
 /* ===================== ITEMS ===================== */
 const SKINS = [
-  {id:'fair',   name:'Fair / Light', hex:'#f0d2bb', hair:'#6b4a2e', note:'Crisp white and soft pastel shirts flatter fair skin; bring colour through the tie. Mid-to-deep suits create flattering contrast — very pale suits can wash you out.'},
-  {id:'medium', name:'Medium',       hex:'#d9a980', hair:'#4a3220', note:'The most versatile tone — almost every suit colour works. Earth tones, blues and jewel-tone ties all sit beautifully against medium skin.'},
-  {id:'olive',  name:'Olive / Tan',  hex:'#b07c4f', hair:'#34241a', note:'Warm, earthy suits (olive, brown, tan) and warm ties harmonise with olive skin. Lift cool greys with a warmer tie or pocket square.'},
-  {id:'deep',   name:'Deep / Dark',  hex:'#6e4326', hair:'#241712', note:'Light-grey and tan suits plus bright or jewel-tone ties create a striking contrast. White and pastel shirts really pop against deep skin.'},
+  {id:'fair',   name:'Fair / Light', hex:'#f0d2bb', hair:'#17171b', note:'Crisp white and soft pastel shirts flatter fair skin; bring colour through the tie. Mid-to-deep suits create flattering contrast — very pale suits can wash you out.'},
+  {id:'medium', name:'Medium',       hex:'#d9a980', hair:'#17171b', note:'The most versatile tone — almost every suit colour works. Earth tones, blues and jewel-tone ties all sit beautifully against medium skin.'},
+  {id:'olive',  name:'Olive / Tan',  hex:'#b07c4f', hair:'#161618', note:'Warm, earthy suits (olive, brown, tan) and warm ties harmonise with olive skin. Lift cool greys with a warmer tie or pocket square.'},
+  {id:'deep',   name:'Deep / Dark',  hex:'#6e4326', hair:'#141416', note:'Light-grey and tan suits plus bright or jewel-tone ties create a striking contrast. White and pastel shirts really pop against deep skin.'},
 ];
 
 const SUITS = [
@@ -511,7 +511,7 @@ function figAvatar(suit,shirt,tie,skin,hair,tux,pat){
     <path d="M163,154 L197,154 L201,200 L159,200 Z" fill="${skin}"/><path d="M163,154 L197,154 L198,170 C190,182 170,182 162,170 Z" fill="#000" opacity=".13"/>
     <path d="M120,110 C120,64 144,44 180,44 C216,44 240,64 240,110 C240,152 214,174 180,174 C146,174 120,152 120,110 Z" fill="${skin}"/>
     ${face}
-    <path d="M116,118 C112,62 144,38 180,38 C218,38 246,64 244,120 C239,98 226,88 214,92 C206,70 190,64 180,66 C167,62 150,72 146,96 C132,100 122,108 116,118 Z" fill="${hair}"/>
+    <path d="M124,150 C116,76 140,34 180,34 C220,34 244,76 236,150 C234,122 225,102 215,100 C208,74 190,68 180,70 C170,66 152,78 147,104 C135,108 126,126 124,150 Z" fill="${hair}"/>
     <path d="M146,196 L214,196 L222,230 L180,322 L138,230 Z" fill="${shirt}"/>
     <path d="M147,194 L181,256 L170,196 Z" fill="${shirt}"/><path d="M213,194 L179,256 L190,196 Z" fill="${shirt}"/>
     <path d="M147,194 L181,256 L170,196 Z" fill="#000" opacity=".08"/><path d="M213,194 L179,256 L190,196 Z" fill="#000" opacity=".04"/>
@@ -559,14 +559,14 @@ function figFull(suit,shirt,tie,skin,hair,tux,trouser,pat){
       <path d="M70,150 C56,155 51,172 54,196 L59,300 L82,300 L77,162 Z" fill="#fff" opacity=".05"/>
       <path d="M150,150 C164,155 169,172 166,196 L161,300 L138,300 L143,162 Z" fill="#000" opacity=".12"/>
       <circle cx="70" cy="304" r="9" fill="${skin}"/><circle cx="150" cy="304" r="9" fill="${skin}"/>
-      <path d="M100,80 L120,80 L121,118 L99,118 Z" fill="${skin}"/><path d="M100,80 L120,80 L120,96 C114,104 106,104 100,96 Z" fill="#000" opacity=".12"/>
-      <ellipse cx="110" cy="54" rx="26" ry="30" fill="${skin}"/>
-      <path d="M99,58 Q103.5,56 108,58" stroke="${hair}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>
-      <path d="M112,58 Q116.5,56 121,58" stroke="${hair}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>
-      <circle cx="101.5" cy="63.5" r="2" fill="#3a2e28"/><circle cx="118.5" cy="63.5" r="2" fill="#3a2e28"/>
-      <path d="M108,68 Q106,74 110,75" stroke="#000" stroke-opacity=".13" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-      <path d="M104,78 Q110,81 116,78" stroke="#000" stroke-opacity=".2" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-      <path d="M84,56 C82,26 95,18 110,18 C126,18 138,28 136,58 C132,42 123,37 115,40 C110,28 101,30 97,41 C90,44 86,48 84,56 Z" fill="${hair}"/>
+      <path d="M97,94 L123,94 L124,120 L96,120 Z" fill="${skin}"/><path d="M97,94 L123,94 L122,108 C115,115 105,115 98,108 Z" fill="#000" opacity=".12"/>
+      <ellipse cx="110" cy="66" rx="26" ry="30" fill="${skin}"/>
+      <path d="M99,70 Q103.5,68 108,70" stroke="${hair}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>
+      <path d="M112,70 Q116.5,68 121,70" stroke="${hair}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>
+      <circle cx="101.5" cy="75.5" r="2" fill="#3a2e28"/><circle cx="118.5" cy="75.5" r="2" fill="#3a2e28"/>
+      <path d="M108,80 Q106,86 110,87" stroke="#000" stroke-opacity=".13" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M104,90 Q110,93 116,90" stroke="#000" stroke-opacity=".2" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M84,68 C82,38 95,30 110,30 C126,30 138,40 136,70 C132,54 123,49 115,52 C110,40 101,42 97,53 C90,56 86,60 84,68 Z" fill="${hair}"/>
       <path d="M96,121 L124,121 L130,148 L110,226 L90,148 Z" fill="${shirt}"/>
       <path d="M93,121 L110,170 L103,123 Z" fill="${shirt}"/><path d="M127,121 L110,170 L117,123 Z" fill="${shirt}"/>
       <path d="M93,121 L110,170 L103,123 Z" fill="#000" opacity=".07"/><path d="M127,121 L110,170 L117,123 Z" fill="#000" opacity=".04"/>
