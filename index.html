@@ -189,6 +189,7 @@ const SUITS = [
   {id:'greytux',     name:'Light Grey Tux',  hex:'#b6bcc4', neutral:true, tux:true},
   {id:'burgundytux', name:'Burgundy Tuxedo', hex:'#5a2030', tux:true},
   {id:'navytux',     name:'Navy Tuxedo',     hex:'#1c2742', neutral:true, tux:true},
+  {id:'whitetux',    name:'White Tuxedo',    hex:'#efeee7', neutral:true, tux:true},
 ];
 
 const SHIRTS = [
@@ -419,7 +420,8 @@ function figAvatar(suit,shirt,tie,skin,hair,tux){
     <g transform="translate(245,286)"><path d="M-16,4 L16,4 L14,-2 L-14,-2 Z" fill="#fbfaf6"/><path d="M-12,-2 L-4,-14 L0,-2 Z" fill="#fbfaf6"/><path d="M-2,-2 L6,-16 L10,-2 Z" fill="#f3f1ea"/></g>
     </g>`;
 }
-function figFull(suit,shirt,tie,skin,hair,tux){
+function figFull(suit,shirt,tie,skin,hair,tux,trouser){
+  trouser=trouser||suit;
   const lapel=tux?'#0c0c10':suit;
   const stripe=tux?`<rect x="63" y="304" width="3.5" height="194" fill="#0c0c10"/><rect x="153.5" y="304" width="3.5" height="194" fill="#0c0c10"/>`:'';
   const lapels=tux?`
@@ -446,8 +448,8 @@ function figFull(suit,shirt,tie,skin,hair,tux){
     <g filter="url(#f2soft)">
       <path d="M60,498 L86,498 L88,514 C88,521 78,523 62,523 L46,523 C43,511 50,501 60,498 Z" fill="#241a12"/>
       <path d="M160,498 L134,498 L132,514 C132,521 142,523 158,523 L174,523 C177,511 170,501 160,498 Z" fill="#241a12"/>
-      <path d="M72,300 L63,500 L89,500 L106,338 L106,300 Z" fill="${suit}"/>
-      <path d="M148,300 L157,500 L131,500 L114,338 L114,300 Z" fill="${suit}"/>
+      <path d="M72,300 L63,500 L89,500 L106,338 L106,300 Z" fill="${trouser}"/>
+      <path d="M148,300 L157,500 L131,500 L114,338 L114,300 Z" fill="${trouser}"/>
       <path d="M72,300 L63,500 L89,500 L106,338 L106,300 Z" fill="#000" opacity=".05"/>
       <path d="M148,300 L157,500 L131,500 L114,338 L114,300 Z" fill="#000" opacity=".12"/>
       ${stripe}
@@ -507,8 +509,9 @@ function figSwatch(su,sh,ti,sk){
 function renderStage(){
   const su=byId(SUITS,state.suit), sh=byId(SHIRTS,state.shirt), ti=byId(TIES,state.tie), sk=byId(SKINS,state.skin);
   const S=su?su.hex:'#444', H=sh?sh.hex:'#eee', T=ti?ti.hex:'#888', K=sk?sk.hex:'#d9a980', hair=sk?sk.hair:'#3a2a1e', tux=!!(su&&su.tux);
+  const trouser=(su&&su.id==='whitetux')?'#1b1b22':S;   /* white dinner jacket = black trousers */
   let html;
-  if(state.view==='full')        html=`<svg class="figure figfull" viewBox="0 0 220 540">${figFull(S,H,T,K,hair,tux)}</svg>`;
+  if(state.view==='full')        html=`<svg class="figure figfull" viewBox="0 0 220 540">${figFull(S,H,T,K,hair,tux,trouser)}</svg>`;
   else if(state.view==='flatlay')html=`<svg class="figure" viewBox="0 0 360 400">${figFlat(S,H,T,K,tux)}</svg>`;
   else if(state.view==='swatch') html=figSwatch(su,sh,ti,sk);
   else                           html=`<svg class="figure" viewBox="0 0 360 430">${figAvatar(S,H,T,K,hair,tux)}</svg>`;
