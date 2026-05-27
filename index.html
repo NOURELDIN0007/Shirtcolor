@@ -144,53 +144,7 @@
   <div class="layout">
     <div class="look-card">
       <div class="stage">
-        <svg class="figure" viewBox="0 0 240 300" aria-label="Outfit preview">
-          <defs>
-            <filter id="soft" x="-30%" y="-20%" width="160%" height="150%">
-              <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="rgba(40,30,50,.20)"/>
-            </filter>
-            <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ffffff" stop-opacity=".16"/>
-              <stop offset=".5" stop-color="#ffffff" stop-opacity="0"/>
-              <stop offset="1" stop-color="#000000" stop-opacity=".10"/>
-            </linearGradient>
-            <radialGradient id="floor" cx="50%" cy="50%" r="50%">
-              <stop offset="0" stop-color="rgba(70,55,80,.16)"/>
-              <stop offset="100%" stop-color="rgba(70,55,80,0)"/>
-            </radialGradient>
-          </defs>
-
-          <ellipse cx="120" cy="288" rx="84" ry="14" fill="url(#floor)"/>
-
-          <g filter="url(#soft)">
-            <!-- shirt panel (behind jacket) -->
-            <path id="f-shirt" d="M96,104 L144,104 L150,122 L120,168 L90,122 Z"/>
-            <!-- neck -->
-            <path id="f-neck" d="M105,78 L135,78 L135,108 Q120,118 105,108 Z"/>
-            <!-- collar -->
-            <path id="f-collarL" d="M104,106 L120,140 L107,108 Z"/>
-            <path id="f-collarR" d="M136,106 L120,140 L133,108 Z"/>
-            <!-- jacket body -->
-            <path id="f-jacket" d="M44,300 L52,168 C54,128 78,112 104,106 L120,150 L136,106 C162,112 186,128 188,168 L196,300 Z"/>
-            <path d="M44,300 L52,168 C54,128 78,112 104,106 L120,150 L136,106 C162,112 186,128 188,168 L196,300 Z" fill="url(#sheen)"/>
-            <!-- lapels -->
-            <path id="f-lapelL" d="M104,106 L120,150 L84,130 Z"/>
-            <path id="f-lapelR" d="M136,106 L120,150 L156,130 Z"/>
-            <path d="M104,106 L120,150 L84,130 Z" fill="#000" opacity=".10"/>
-            <path d="M136,106 L120,150 L156,130 Z" fill="#000" opacity=".10"/>
-            <!-- tie -->
-            <path id="f-knot" d="M113,106 L127,106 L129,122 L111,122 Z"/>
-            <path id="f-tie" d="M111,122 L129,122 L133,180 L120,206 L107,180 Z"/>
-            <!-- buttons -->
-            <circle cx="120" cy="176" r="2.4" fill="rgba(0,0,0,.28)"/>
-            <circle cx="120" cy="200" r="2.4" fill="rgba(0,0,0,.28)"/>
-            <!-- pocket square -->
-            <path d="M150,162 L168,162 L159,153 Z" fill="#fbfaf6" opacity=".92"/>
-            <!-- head -->
-            <ellipse id="f-head" cx="120" cy="52" rx="30" ry="34"/>
-            <path d="M120,18 C100,18 92,32 93,46 C100,38 140,38 147,46 C148,32 140,18 120,18 Z" fill="rgba(0,0,0,.16)"/>
-          </g>
-        </svg>
+        <svg id="figure" class="figure" viewBox="0 0 360 430" aria-label="Outfit preview"></svg>
       </div>
       <div class="rating" id="rating"></div>
       <div class="look-rows" id="lookRows"></div>
@@ -203,10 +157,10 @@
 <script>
 /* ===================== ITEMS ===================== */
 const SKINS = [
-  {id:'fair',   name:'Fair / Light', hex:'#f0d2bb', note:'Crisp white and soft pastel shirts flatter fair skin; bring colour through the tie. Mid-to-deep suits create flattering contrast — very pale suits can wash you out.'},
-  {id:'medium', name:'Medium',       hex:'#d9a980', note:'The most versatile tone — almost every suit colour works. Earth tones, blues and jewel-tone ties all sit beautifully against medium skin.'},
-  {id:'olive',  name:'Olive / Tan',  hex:'#b07c4f', note:'Warm, earthy suits (olive, brown, tan) and warm ties harmonise with olive skin. Lift cool greys with a warmer tie or pocket square.'},
-  {id:'deep',   name:'Deep / Dark',  hex:'#6e4326', note:'Light-grey and tan suits plus bright or jewel-tone ties create a striking contrast. White and pastel shirts really pop against deep skin.'},
+  {id:'fair',   name:'Fair / Light', hex:'#f0d2bb', hair:'#6b4a2e', note:'Crisp white and soft pastel shirts flatter fair skin; bring colour through the tie. Mid-to-deep suits create flattering contrast — very pale suits can wash you out.'},
+  {id:'medium', name:'Medium',       hex:'#d9a980', hair:'#4a3220', note:'The most versatile tone — almost every suit colour works. Earth tones, blues and jewel-tone ties all sit beautifully against medium skin.'},
+  {id:'olive',  name:'Olive / Tan',  hex:'#b07c4f', hair:'#34241a', note:'Warm, earthy suits (olive, brown, tan) and warm ties harmonise with olive skin. Lift cool greys with a warmer tie or pocket square.'},
+  {id:'deep',   name:'Deep / Dark',  hex:'#6e4326', hair:'#241712', note:'Light-grey and tan suits plus bright or jewel-tone ties create a striking contrast. White and pastel shirts really pop against deep skin.'},
 ];
 
 const SUITS = [
@@ -399,15 +353,65 @@ const byId=(arr,id)=>arr.find(x=>x.id===id);
 const state={ skin:'medium', mode:'suit', suit:'navy', shirt:'white', tie:'burgundy' };
 
 /* ===================== FIGURE + LOOK BAR ===================== */
-function setFill(id,hex){ const el=document.getElementById(id); if(el) el.setAttribute('fill',hex); }
+function buildFigure(suit,shirt,tie,skin,hair){
+  return `
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="62%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".7"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="floor" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="rgba(70,55,80,.18)"/><stop offset="1" stop-color="rgba(70,55,80,0)"/>
+    </radialGradient>
+    <linearGradient id="jshade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".14"/>
+    </linearGradient>
+    <linearGradient id="tieshade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(40,30,50,.22)"/>
+    </filter>
+  </defs>
+  <circle cx="180" cy="170" r="150" fill="url(#bg)"/>
+  <ellipse cx="180" cy="412" rx="130" ry="15" fill="url(#floor)"/>
+  <g filter="url(#soft)">
+    <ellipse cx="125" cy="118" rx="11" ry="15" fill="${skin}"/>
+    <ellipse cx="235" cy="118" rx="11" ry="15" fill="${skin}"/>
+    <path d="M163,154 L197,154 L201,200 L159,200 Z" fill="${skin}"/>
+    <path d="M163,154 L197,154 L198,170 C190,182 170,182 162,170 Z" fill="#000" opacity=".13"/>
+    <path d="M120,110 C120,64 144,44 180,44 C216,44 240,64 240,110 C240,152 214,174 180,174 C146,174 120,152 120,110 Z" fill="${skin}"/>
+    <path d="M116,118 C112,62 144,38 180,38 C218,38 246,64 244,120 C239,98 226,88 214,92 C206,70 190,64 180,66 C167,62 150,72 146,96 C132,100 122,108 116,118 Z" fill="${hair}"/>
+    <path d="M116,118 C112,62 144,38 180,38 C218,38 246,64 244,120 C239,98 226,88 214,92 C206,70 190,64 180,66 C167,62 150,72 146,96 C132,100 122,108 116,118 Z" fill="#fff" opacity=".06"/>
+    <path d="M146,196 L214,196 L222,230 L180,322 L138,230 Z" fill="${shirt}"/>
+    <path d="M147,194 L181,256 L170,196 Z" fill="${shirt}"/>
+    <path d="M213,194 L179,256 L190,196 Z" fill="${shirt}"/>
+    <path d="M147,194 L181,256 L170,196 Z" fill="#000" opacity=".08"/>
+    <path d="M213,194 L179,256 L190,196 Z" fill="#000" opacity=".04"/>
+    <path d="M52,430 L60,292 C64,244 92,218 134,196 L180,284 L226,196 C268,218 296,244 300,292 L308,430 Z" fill="${suit}"/>
+    <path d="M52,430 L60,292 C64,244 92,218 134,196 L180,284 L226,196 C268,218 296,244 300,292 L308,430 Z" fill="url(#jshade)"/>
+    <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="${suit}"/>
+    <path d="M226,196 L180,284 L180,306 L241,240 C237,222 232,206 226,196 Z" fill="${suit}"/>
+    <path d="M134,196 L180,284 L180,306 L119,240 C123,222 128,206 134,196 Z" fill="#000" opacity=".10"/>
+    <path d="M226,196 L180,284 L180,306 L241,240 C237,222 232,206 226,196 Z" fill="#000" opacity=".17"/>
+    <path d="M134,196 L180,284" stroke="#fff" stroke-opacity=".10" stroke-width="3" fill="none"/>
+    <path d="M226,196 L180,284" stroke="#000" stroke-opacity=".12" stroke-width="3" fill="none"/>
+    <path d="M166,192 L194,192 L190,222 L170,222 Z" fill="${tie}"/>
+    <path d="M170,222 L190,222 L199,320 L180,360 L161,320 Z" fill="${tie}"/>
+    <path d="M170,222 L190,222 L199,320 L180,360 L161,320 Z" fill="url(#tieshade)"/>
+    <path d="M180,194 L187,205 L180,212 L173,205 Z" fill="#000" opacity=".20"/>
+    <circle cx="180" cy="302" r="3" fill="rgba(0,0,0,.32)"/>
+    <circle cx="180" cy="334" r="3" fill="rgba(0,0,0,.32)"/>
+    <g transform="translate(245,286)">
+      <path d="M-16,4 L16,4 L14,-2 L-14,-2 Z" fill="#fbfaf6"/>
+      <path d="M-12,-2 L-4,-14 L0,-2 Z" fill="#fbfaf6"/>
+      <path d="M-2,-2 L6,-16 L10,-2 Z" fill="#f3f1ea"/>
+    </g>
+  </g>`;
+}
 function renderFigure(){
   const su=byId(SUITS,state.suit), sh=byId(SHIRTS,state.shirt), ti=byId(TIES,state.tie), sk=byId(SKINS,state.skin);
-  const suitHex=su?su.hex:'#444';
-  ['f-jacket','f-lapelL','f-lapelR'].forEach(id=>setFill(id,suitHex));
-  const shHex=sh?sh.hex:'#eee';
-  ['f-shirt','f-collarL','f-collarR'].forEach(id=>setFill(id,shHex));
-  const tiHex=ti?ti.hex:'#888'; setFill('f-tie',tiHex); setFill('f-knot',tiHex);
-  const skHex=sk?sk.hex:'#d9a980'; setFill('f-head',skHex); setFill('f-neck',skHex);
+  document.getElementById('figure').innerHTML=buildFigure(
+    su?su.hex:'#444', sh?sh.hex:'#eee', ti?ti.hex:'#888', sk?sk.hex:'#d9a980', sk?sk.hair:'#3a2a1e');
 }
 function overall(){
   const p=[];
