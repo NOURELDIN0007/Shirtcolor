@@ -99,9 +99,8 @@
   .rec-item .info .nm{font-size:14px; font-weight:600;}
   .rec-item .info .why{font-size:11.5px; color:var(--muted);}
   .tag{font-size:11px; font-weight:800; padding:3px 10px; border-radius:999px; white-space:nowrap;}
-  .t3{background:var(--goodbg); color:var(--good);}
-  .t2{background:var(--greatbg); color:var(--great);}
-  .t1{background:var(--okbg); color:var(--ok);}
+  .t2{background:var(--goodbg); color:var(--good);}
+  .t1{background:var(--greatbg); color:var(--great);}
   .t0{background:var(--avoidbg); color:var(--avoid);}
 
   .note{background:linear-gradient(135deg,#f6f0f8,#eef1f6); border:1px solid var(--line); border-radius:14px; padding:13px 15px; font-size:13px; color:var(--ink); margin-top:18px;}
@@ -121,7 +120,7 @@
   .mx-cell .tie{width:20px; height:20px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.12);}
   .mx-cell.sel{border-color:var(--ink);}
   .mx-row.dim{opacity:.34;}
-  .cell3{background:var(--goodbg);} .cell2{background:var(--greatbg);} .cell1{background:var(--okbg);} .cell0{background:var(--avoidbg);}
+  .cell2{background:var(--goodbg);} .cell1{background:var(--greatbg);} .cell0{background:var(--avoidbg);}
   .legend{display:flex; flex-wrap:wrap; gap:14px; margin-top:18px; font-size:12px; color:var(--muted);}
   .legend .k{display:flex; align-items:center; gap:6px;}
   .legend .b{width:16px; height:16px; border-radius:5px;}
@@ -264,86 +263,107 @@ function attach(o){ const c=hexToHsl(o.hex); o.h=c.h; o.s=c.s; o.l=c.l; o.temp=t
 [...SUITS,...SHIRTS,...TIES,...SKINS].forEach(attach);
 const hueDist=(a,b)=>{ let d=Math.abs(a-b)%360; return d>180?360-d:d; };
 
-/* ===================== SCORING ENGINE ===================== */
+/* ===================== SCORING ENGINE =====================
+   Built on menswear colour rules from FashionBeans, The Tie Bar, Hockerty,
+   Suits Expert, TieMart, The Black Tux and skin-tone colour-analysis guides:
+   - the shirt should be the lightest piece; the tie should be darker than the shirt
+   - never match a piece to a near-identical shade (navy tie + navy suit = off)
+   - adjacent loud hues clash; complementary hues pop; earth tones harmonise
+   - black suits reject tan / light-brown / beige accents
+   - fair skin needs contrast (pale suits wash it out); deep skin pops in light tones;
+     olive favours warm browns/olive but goes sallow in pale beige; medium is versatile
+*/
 function tempHarmony(a,b){
-  if(a===b && a!=='neutral') return 0.6;        /* same temperature family */
-  if(a==='neutral'||b==='neutral') return 0.3;  /* neutral plays nicely */
-  if(a==='green'||b==='green') return 0.45;     /* green is versatile */
-  return 0.2;                                    /* warm vs cool — can still pop */
+  if(a===b && a!=='neutral') return 0.55;
+  if(a==='neutral'||b==='neutral') return 0.28;
+  if(a==='green'||b==='green') return 0.4;
+  return 0.18;
 }
 function clamp(x){ return Math.max(0, Math.min(3, x)); }
 
 function scoreSuitShirt(S,H){
   let s=1.0;
-  if(S.l<45){                       /* dark suit — wants a light shirt */
-    if(H.l>78) s+=1.5; else if(H.l>62) s+=1.0; else if(H.l>48) s+=0.3; else s-=0.7;
+  if(S.l<45){                       /* dark suit wants a clearly lighter shirt */
+    if(H.l>78) s+=1.5; else if(H.l>60) s+=1.0; else if(H.l>46) s+=0.2; else s-=1.0;
   } else if(S.l>62){                /* light suit */
-    if(H.l>84) s+=1.0; else if(H.l>62) s+=0.35; else if(H.l<45) s+=0.5; else s+=0.1;
+    if(H.l>84) s+=1.0; else if(H.l>64) s+=0.3; else if(H.l<42) s+=0.4; else s-=0.2;
   } else {                          /* mid-tone suit */
-    if(H.l>72) s+=0.9; else if(H.l<40) s+=0.2; else s+=0.3;
+    if(H.l>72) s+=0.9; else if(H.l<40) s+=0.2; else s+=0.1;
   }
-  if(H.neutral) s+=0.55;
-  if(S.s>30 && H.s>30 && !S.neutral && !H.neutral){
+  if(H.neutral) s+=0.5;
+  if(S.s>22 && H.s>22){             /* both have real colour */
     const dh=hueDist(S.h,H.h);
-    if(dh<16) s+=0.2;                              /* tonal */
-    else if(dh<50 && Math.abs(S.l-H.l)<30) s-=0.5; /* two colours fighting */
+    if(dh<18 && Math.abs(S.l-H.l)<22) s-=1.3;     /* shirt = suit colour: looks off */
+    else if(dh<18) s+=0.1;
+    else if(dh<55 && Math.abs(S.l-H.l)<30) s-=0.6; /* two colours fighting */
   }
-  if(H.s>58 && H.l<72) s-=0.5;       /* loud saturated shirt = less versatile */
-  if(S.tux){
-    if(H.id==='white'||H.id==='ivory') s+=1.3;
-    else if(H.id==='black') s+=0.5;
-    else s-=1.6;                     /* coloured shirt under a tuxedo */
-  }
+  if(H.s>55 && H.l<74) s-=0.55;     /* loud coloured shirt = risky under a suit */
+  if(S.tux){ if(H.id==='white'||H.id==='ivory') s+=1.4; else if(H.id==='black') s+=0.5; else s-=1.9; }
   return clamp(s);
 }
 function scoreSuitTie(S,T){
   let s=1.0;
-  if(T.universal) s+=0.6;
+  if(T.universal) s+=0.8;
   s+=tempHarmony(S.temp,T.temp);
   if(S.s>18 && T.s>18){
     const dh=hueDist(S.h,T.h);
-    if(dh<16 && Math.abs(S.l-T.l)<18) s-=1.2;     /* same colour, too matchy */
-    else if(dh<16) s+=0.2;                         /* tonal, different depth */
-    else if(dh<50 && S.s>45 && T.s>45 && Math.abs(S.l-T.l)<24) s-=0.6; /* two loud near-miss */
-    else if(dh<65) s+=0.2;                          /* analogous / earth harmony */
+    if(dh<16 && Math.abs(S.l-T.l)<20) s-=1.4;       /* tie = suit colour: too matchy */
+    else if(dh<16) s+=0.25;                          /* tonal, clearly different depth */
+    else if(dh<48){ if(S.s>45 && T.s>45) s-=0.5; else s+=0.15; } /* adjacent: clash only if both vivid */
+    else if(dh>=150) s+=0.45;                         /* complementary pop */
+    else s+=0.2;
   }
-  if((S.temp==='warm'&&T.temp==='green')||(S.temp==='green'&&T.temp==='warm')) s+=0.25; /* earth tones */
-  if(S.l<42 && T.l>62 && !T.neutral) s+=0.3;        /* light tie pops on dark suit */
-  if(!T.neutral && T.l>60 && T.l>S.l+18) s-=0.25;   /* genuinely pale tie floats */
-  if(S.tux){ s += T.dressy ? 1.3 : -1.3; }
+  if((S.temp==='warm'||S.temp==='green')&&(T.temp==='warm'||T.temp==='green')) s+=0.2; /* earth-tone harmony */
+  if(S.l<42 && T.l>60 && !T.neutral) s+=0.25;        /* mid/rich tie pops on a dark suit */
+  if(!T.neutral && T.l>62 && T.l>S.l+22) s-=0.4;     /* genuinely pale tie floats / washes out */
+  if((S.id==='black'||S.id==='blacktux') && ['tan','brown','olive','gold'].includes(T.id)) s-=1.2; /* warm earth ties clash with black */
+  if(S.tux){ s += T.dressy ? 1.2 : -1.3; }
   return clamp(s);
 }
 function scoreShirtTie(H,T){
   let s=1.0;
-  if(H.id==='white') s+=1.0; else if(H.neutral) s+=0.4;
-  const adl=Math.abs(H.l-T.l);                      /* contrast either direction */
-  if(adl>32) s+=0.9; else if(adl>16) s+=0.4; else s-=0.7;
-  if(H.l>70 && T.l>70 && !T.neutral) s-=0.7;        /* pale tie on light shirt = weak */
-  if(H.s>18 && T.s>18 && !H.neutral && !T.neutral){
-    const dh=hueDist(H.h,T.h);
-    if(dh<16 && adl>16) s+=0.4;                      /* tonal, clear depth difference */
-    else if(dh<16) s-=0.7;                            /* same hue, same depth */
-    else if(dh<50 && H.s>45 && T.s>45) s-=0.6;        /* two loud near-miss colours */
+  if(H.id==='white') s+=1.05; else if(H.neutral) s+=0.4;
+  const dl=H.l-T.l;                                   /* +ve = tie darker than shirt (correct) */
+  const both=H.s>18 && T.s>18;
+  const dh=both?hueDist(H.h,T.h):999;
+  if(dh<16){                                          /* same colour family (tonal) */
+    if(dl>34) s+=0.8; else if(dl>18) s+=0.45; else if(dl>8) s-=0.2; else s-=1.2; /* tie must be clearly darker */
+    if(H.l>72 && T.l>60) s-=0.4;                       /* light-on-light tonal washes out */
+  } else {                                            /* different hue */
+    if(dl>30) s+=1.0; else if(dl>14) s+=0.5; else if(dl>-2) s-=0.4; else s-=1.3; /* tie lighter than shirt = wrong */
+    if(H.l>70 && T.l>66 && !T.neutral) s-=0.8;        /* pastel-on-pastel */
+    if(both){
+      if(dh<55){ if(H.s>42 && T.s>42) s-=0.7; else s+=0.1; }  /* adjacent clash if both vivid */
+      else if(dh>=150) s+=0.6;                                 /* complementary pop */
+      else s+=0.2;
+    }
   }
-  if(H.s>45 && T.s>45 && !H.neutral && !T.neutral) s-=0.3;
-  if(T.id==='black' && H.l>70) s+=0.2;
+  if(T.id==='black' && H.l>72) s+=0.2;
   return clamp(s);
 }
 function scoreSkinSuit(skin,S){
-  let s=1.2;
-  const dl=Math.abs(S.l-skin.l);
-  s += Math.min(dl,45)/45;                       /* contrast up to +1 */
-  if(S.neutral) s+=0.4;
-  if(skin.id==='fair'){ if(S.l>78) s-=0.9; else if(S.l>=18&&S.l<=62) s+=0.5; }
-  if(skin.id==='deep'){ if(S.l>62) s+=0.7; }
-  if(skin.id==='olive'){ if(S.temp==='warm'||S.temp==='green') s+=0.5; }
-  if(skin.id==='medium'){ s+=0.3; }
+  let s=1.3;
+  s += Math.min(Math.abs(S.l-skin.l),46)/46;          /* contrast helps almost everyone */
+  if(S.neutral) s+=0.35;
+  if(skin.id==='fair'){                               /* needs contrast; pale/beige suits wash out */
+    if(S.l>80) s-=1.2;
+    else if(S.l>56 && (S.temp==='warm'||S.id==='tan')) s-=0.9;  /* tan/camel/beige mimic fair skin */
+    else if(S.l>62) s-=0.6;
+    else if(S.l>=18) s+=0.5;
+  }
+  if(skin.id==='medium'){ s+=0.35; if(S.temp==='warm') s+=0.2; }
+  if(skin.id==='olive'){
+    if(S.temp==='warm'||S.id==='olive') s+=0.5;
+    if(S.id==='tan') s-=0.4;                           /* pale beige can look sallow */
+    if(S.id==='lightgrey'||S.id==='greytux') s-=0.2;
+  }
+  if(skin.id==='deep'){ if(S.l>60) s+=0.7; }           /* light/bright suits pop on deep skin */
   return clamp(s);
 }
 
-function toTier(raw){ if(raw>=2.45) return 3; if(raw>=1.65) return 2; if(raw>=0.85) return 1; return 0; }
-const TIER={3:'Excellent',2:'Great',1:'Works',0:'Avoid'};
-const WHY ={3:'A standout pairing.',2:'A strong, reliable choice.',1:'Acceptable — fine in a pinch.',0:'Tones clash — best avoided.'};
+function toTier(raw){ if(raw>=2.2) return 2; if(raw>=1.15) return 1; return 0; }
+const TIER={2:'Excellent',1:'Good',0:'Bad'};
+const WHY ={2:'Strong contrast and balance — a sharp pairing.',1:'A safe, harmonious match.',0:'Clashes or falls flat — skip this one.'};
 
 function bestTie(S,H){
   let best=TIES[0], bs=-9;
@@ -526,11 +546,11 @@ function overall(){
   if(su&&ti) p.push(scoreSuitTie(su,ti));
   if(sh&&ti) p.push(scoreShirtTie(sh,ti));
   if(!p.length) return {label:'—',cls:'t1'};
-  const avg=p.reduce((a,b)=>a+b,0)/p.length;
-  if(avg>=2.4) return {label:'Excellent look',cls:'t3'};
-  if(avg>=1.75) return {label:'Great look',cls:'t2'};
-  if(avg>=1.05) return {label:'Solid look',cls:'t1'};
-  return {label:'Reconsider',cls:'t0'};
+  const avg=p.reduce((a,b)=>a+b,0)/p.length, worst=Math.min(...p);
+  if(worst<1.0) return {label:'Bad — a piece clashes',cls:'t0'};  /* one weak link spoils it */
+  if(avg>=2.2) return {label:'Excellent look',cls:'t2'};
+  if(avg>=1.15) return {label:'Good look',cls:'t1'};
+  return {label:'Bad — reconsider',cls:'t0'};
 }
 function renderLookBar(){
   const r=overall();
@@ -562,9 +582,13 @@ function pickGrid(items,activeId){
       <div class="nm">${o.name}</div>${o.tux?'<div class="tux">TUX</div>':''}
     </div>`).join('')+`</div>`;
 }
-function recList(ranked,activeId,limit){
-  return ranked.map(r=>({o:r.item,tier:toTier(r.raw)})).filter(x=>x.tier>=1).slice(0,limit||12)
-    .map(x=>recItem(x.o,x.tier,activeId)).join('');
+/* weakest-link aware: a piece that clashes with EITHER side is rated down */
+function combine(a,b){ return Math.min(a,b)*0.5 + (a+b)*0.25; }
+/* rank every option best→worst and show all, each tagged Excellent / Good / Bad */
+function recListScored(items, fn, activeId){
+  return items.map((o,i)=>({o, raw:fn(o), i}))
+    .sort((x,y)=> y.raw-x.raw || x.i-y.i)
+    .map(x=>recItem(x.o, toTier(x.raw), activeId)).join('');
 }
 
 /* ===================== PANELS ===================== */
@@ -576,48 +600,41 @@ function skinNote(){ const sk=byId(SKINS,state.skin); return `<div class="note">
 
 function fromSuit(p){
   const S=byId(SUITS,state.suit), H=byId(SHIRTS,state.shirt);
-  const shirts=rankBy(SHIRTS,sh=>scoreSuitShirt(S,sh));
-  const ties=rankBy(TIES,t=>scoreSuitTie(S,t)*0.7+scoreShirtTie(H,t)*0.45);
   p.innerHTML=`<h2>Pick your suit</h2>
-    <p class="hint">Choose a suit colour — we'll match the shirt and tie. Tuxedos switch to black-tie rules.</p>
+    <p class="hint">Every shirt &amp; tie is rated against this suit (and your current shirt). Tuxedos use black-tie rules.</p>
     ${pickGrid(SUITS,state.suit)}
     <div class="rec-wrap">
-      <div class="rec-col"><h3>Best shirts</h3>${recList(shirts,state.shirt)}</div>
-      <div class="rec-col"><h3>Best ties</h3>${ties.map(r=>({o:r.item,tier:toTier(scoreSuitTie(S,r.item))})).filter(x=>x.tier>=1).slice(0,12).map(x=>recItem(x.o,x.tier,state.tie)).join('')}</div>
+      <div class="rec-col"><h3>Shirts</h3>${recListScored(SHIRTS, sh=>scoreSuitShirt(S,sh), state.shirt)}</div>
+      <div class="rec-col"><h3>Ties</h3>${recListScored(TIES, t=>combine(scoreSuitTie(S,t),scoreShirtTie(H,t)), state.tie)}</div>
     </div>${skinNote()}`;
 }
 function fromShirt(p){
   const H=byId(SHIRTS,state.shirt), sk=byId(SKINS,state.skin);
-  const suits=rankBy(SUITS,su=>scoreSuitShirt(su,H)*0.75+scoreSkinSuit(sk,su)*0.4);
-  const ties=rankBy(TIES,t=>scoreShirtTie(H,t));
   p.innerHTML=`<h2>Pick your shirt</h2>
-    <p class="hint">Choose a shirt colour and we'll build the suit and tie around it.</p>
+    <p class="hint">Every suit &amp; tie is rated against this shirt (suits also weigh your skin tone).</p>
     ${pickGrid(SHIRTS,state.shirt)}
     <div class="rec-wrap">
-      <div class="rec-col"><h3>Best suits</h3>${suits.map(r=>({o:r.item,tier:toTier(scoreSuitShirt(r.item,H))})).filter(x=>x.tier>=1).slice(0,12).map(x=>recItem(x.o,x.tier,state.suit)).join('')}</div>
-      <div class="rec-col"><h3>Best ties</h3>${recList(ties,state.tie)}</div>
+      <div class="rec-col"><h3>Suits</h3>${recListScored(SUITS, su=>combine(scoreSuitShirt(su,H),scoreSkinSuit(sk,su)), state.suit)}</div>
+      <div class="rec-col"><h3>Ties</h3>${recListScored(TIES, t=>scoreShirtTie(H,t), state.tie)}</div>
     </div>${skinNote()}`;
 }
 function fromTie(p){
-  const T=byId(TIES,state.tie);
-  const suits=rankBy(SUITS,su=>scoreSuitTie(su,T));
-  const shirts=rankBy(SHIRTS,sh=>scoreShirtTie(sh,T));
+  const T=byId(TIES,state.tie), H=byId(SHIRTS,state.shirt);
   p.innerHTML=`<h2>Pick your tie</h2>
-    <p class="hint">Have a favourite tie? See the suits and shirts it loves most.</p>
+    <p class="hint">Have a favourite tie? Every suit &amp; shirt is rated for it — clashes are flagged Bad.</p>
     ${pickGrid(TIES,state.tie)}
     <div class="rec-wrap">
-      <div class="rec-col"><h3>Best suits</h3>${recList(suits,state.suit)}</div>
-      <div class="rec-col"><h3>Best shirts</h3>${recList(shirts,state.shirt)}</div>
+      <div class="rec-col"><h3>Suits</h3>${recListScored(SUITS, su=>scoreSuitTie(su,T), state.suit)}</div>
+      <div class="rec-col"><h3>Shirts</h3>${recListScored(SHIRTS, sh=>scoreShirtTie(sh,T), state.shirt)}</div>
     </div>${skinNote()}`;
 }
 function fromSkin(p){
   const sk=byId(SKINS,state.skin);
-  const suits=rankBy(SUITS,su=>scoreSkinSuit(sk,su));
   p.innerHTML=`<h2>Suits for ${sk.name.toLowerCase()} skin</h2>
-    <p class="hint">These suit colours flatter your skin tone most. Tap one to start building the full look.</p>
+    <p class="hint">Each suit colour rated for your skin tone — flattering ones are Excellent, washed-out or clashing ones are Bad.</p>
     ${skinNote()}
     <div class="rec-wrap">
-      <div class="rec-col"><h3>Best suits for you</h3>${suits.map(r=>recItem(r.item,toTier(r.raw),state.suit)).join('')}</div>
+      <div class="rec-col"><h3>Suits for you</h3>${recListScored(SUITS, su=>scoreSkinSuit(sk,su), state.suit)}</div>
       <div class="rec-col"><h3>Then build the look</h3>${pickGrid(SUITS,state.suit)}</div>
     </div>`;
 }
@@ -628,7 +645,7 @@ function matrix(p){
   head+=`</tr>`;
   let body='';
   SUITS.forEach(su=>{
-    const ss=scoreSkinSuit(sk,su), dim=toTier(ss)<2?'dim':'', star=toTier(ss)===3?'<span class="star">★</span>':'';
+    const ss=scoreSkinSuit(sk,su), dim=toTier(ss)===0?'dim':'', star=toTier(ss)===2?'<span class="star">★</span>':'';
     body+=`<tr class="mx-row ${dim}"><td><div class="mx-rowhead"><div class="chip" style="background:${su.hex}"></div><div class="t">${su.name} ${star}</div></div></td>`;
     SHIRTS.forEach(sh=>{
       const tier=toTier(scoreSuitShirt(su,sh)), bt=bestTie(su,sh);
@@ -642,13 +659,12 @@ function matrix(p){
     <p class="hint">Rows = suit, columns = shirt. Each dot is the best tie for that pairing; cell colour rates the suit + shirt match.</p>
     <div class="matrix-scroll"><table class="matrix">${head}${body}</table></div>
     <div class="legend">
-      <div class="k"><span class="b cell3"></span>Excellent</div>
-      <div class="k"><span class="b cell2"></span>Great</div>
-      <div class="k"><span class="b cell1"></span>Works</div>
-      <div class="k"><span class="b cell0"></span>Avoid</div>
+      <div class="k"><span class="b cell2"></span>Excellent</div>
+      <div class="k"><span class="b cell1"></span>Good</div>
+      <div class="k"><span class="b cell0"></span>Bad</div>
       <div class="k"><span class="star" style="color:var(--accent)">★</span>= best for ${sk.name.toLowerCase()} skin</div>
     </div>
-    <p class="mx-help">Faded rows suit your skin tone less. Tap any cell to load that combination into your live look on the left.</p>`;
+    <p class="mx-help">Faded rows are a bad match for your skin tone. Tap any cell to load that combination into your live look on the left.</p>`;
 }
 
 /* ===================== EVENTS ===================== */
