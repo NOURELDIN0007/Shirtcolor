@@ -561,16 +561,22 @@ function figFull(suit,shirt,tie,skin,hair,tux,trouser,pat){
       <circle cx="70" cy="304" r="9" fill="${skin}"/><circle cx="150" cy="304" r="9" fill="${skin}"/>
       <path d="M100,80 L120,80 L121,118 L99,118 Z" fill="${skin}"/><path d="M100,80 L120,80 L120,96 C114,104 106,104 100,96 Z" fill="#000" opacity=".12"/>
       <ellipse cx="110" cy="54" rx="26" ry="30" fill="${skin}"/>
-      <path d="M84,58 C81,24 97,12 110,12 C125,12 142,28 139,60 C136,44 127,38 119,41 C113,26 103,26 97,34 C90,36 85,46 84,58 Z" fill="${hair}"/>
-      <path d="M92,122 L128,122 L134,150 L110,228 L86,150 Z" fill="${shirt}"/>
-      <path d="M92,122 L111,182 L104,124 Z" fill="${shirt}"/><path d="M128,122 L109,182 L116,124 Z" fill="${shirt}"/>
-      <path d="M74,302 L70,150 C72,132 90,122 110,120 C130,122 148,132 150,150 L146,302 Z" fill="${suit}"/>
-      <path d="M74,302 L70,150 C72,132 90,122 110,120 C130,122 148,132 150,150 L146,302 Z" fill="url(#f2j)"/>
+      <path d="M99,58 Q103.5,56 108,58" stroke="${hair}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>
+      <path d="M112,58 Q116.5,56 121,58" stroke="${hair}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>
+      <circle cx="101.5" cy="63.5" r="2" fill="#3a2e28"/><circle cx="118.5" cy="63.5" r="2" fill="#3a2e28"/>
+      <path d="M108,68 Q106,74 110,75" stroke="#000" stroke-opacity=".13" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M104,78 Q110,81 116,78" stroke="#000" stroke-opacity=".2" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M84,56 C82,26 95,18 110,18 C126,18 138,28 136,58 C132,42 123,37 115,40 C110,28 101,30 97,41 C90,44 86,48 84,56 Z" fill="${hair}"/>
+      <path d="M96,121 L124,121 L130,148 L110,226 L90,148 Z" fill="${shirt}"/>
+      <path d="M93,121 L110,170 L103,123 Z" fill="${shirt}"/><path d="M127,121 L110,170 L117,123 Z" fill="${shirt}"/>
+      <path d="M93,121 L110,170 L103,123 Z" fill="#000" opacity=".07"/><path d="M127,121 L110,170 L117,123 Z" fill="#000" opacity=".04"/>
+      <path d="M74,302 L70,150 C72,134 80,126 88,124 L110,214 L132,124 C140,126 148,134 150,150 L146,302 Z" fill="${suit}"/>
+      <path d="M74,302 L70,150 C72,134 80,126 88,124 L110,214 L132,124 C140,126 148,134 150,150 L146,302 Z" fill="url(#f2j)"/>
       <path d="M73,152 C78,168 80,184 77,202" stroke="#000" stroke-opacity=".10" stroke-width="7" fill="none"/>
       <path d="M147,152 C142,168 140,184 143,202" stroke="#000" stroke-opacity=".14" stroke-width="7" fill="none"/>
       ${lapels}${necktie}
-      <circle cx="110" cy="248" r="2.6" fill="rgba(0,0,0,.3)"/><circle cx="110" cy="278" r="2.6" fill="rgba(0,0,0,.3)"/>
-      <path d="M136,200 l13,0 l-2,-11 l-4.5,7 l-3,-8 l-3.5,12 Z" fill="#fbfaf6"/>
+      <circle cx="110" cy="250" r="2.6" fill="rgba(0,0,0,.3)"/><circle cx="110" cy="278" r="2.6" fill="rgba(0,0,0,.3)"/>
+      <path d="M136,198 l13,0 l-2,-11 l-4.5,7 l-3,-8 l-3.5,12 Z" fill="#fbfaf6"/>
     </g>`;
 }
 function figFlat(suit,shirt,tie,skin,tux,pat){
