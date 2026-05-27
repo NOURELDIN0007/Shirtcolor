@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Suit &amp; Tie — Color Matcher</title>
+<style>
+  :root{
+    --bg:#14161b; --bg2:#1b1e25; --card:#21252e; --card2:#272c37;
+    --line:#333a46; --text:#ece9e3; --muted:#9aa1ac; --accent:#c8a96a;
+    --good:#43b581; --great:#c8a96a; --ok:#8a8f98; --avoid:#cf6a6a;
+    --radius:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,#14161b,#101116 60%); color:var(--text);
+    min-height:100vh; padding:env(safe-area-inset-top) 16px 40px; line-height:1.45;
+    -webkit-text-size-adjust:100%;
+  }
+  header{padding:18px 4px 12px; text-align:center;}
+  header h1{margin:0; font-size:24px; letter-spacing:.5px; font-weight:600;}
+  header h1 .ac{color:var(--accent);}
+  header p{margin:4px 0 0; color:var(--muted); font-size:13px;}
+
+  .wrap{max-width:1180px; margin:0 auto;}
+
+  .section-title{font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:var(--muted); margin:0 0 10px 2px;}
+
+  /* Skin selector */
+  .skin-bar{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:14px; margin:8px 0 16px;}
+  .skin-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .skin-opt{display:flex; flex-direction:column; align-items:center; gap:7px; padding:10px 6px; border-radius:12px; border:2px solid transparent; background:var(--card2); cursor:pointer; transition:.15s;}
+  .skin-opt .dot{width:40px; height:40px; border-radius:50%; border:2px solid rgba(255,255,255,.18);}
+  .skin-opt span{font-size:12px; color:var(--muted); text-align:center;}
+  .skin-opt.active{border-color:var(--accent); background:#2e3340;}
+  .skin-opt.active span{color:var(--text);}
+
+  /* Mode tabs */
+  .tabs{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px;}
+  .tab{flex:1 1 auto; min-width:120px; text-align:center; padding:12px 10px; border-radius:12px; background:var(--card); border:1px solid var(--line); color:var(--muted); font-size:14px; font-weight:600; cursor:pointer; transition:.15s;}
+  .tab.active{background:var(--accent); color:#1a1a1a; border-color:var(--accent);}
+
+  /* Layout */
+  .layout{display:grid; grid-template-columns:300px 1fr; gap:18px; align-items:start;}
+  @media (max-width:820px){ .layout{grid-template-columns:1fr;} }
+
+  /* Figure / look bar */
+  .look-card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; position:sticky; top:8px;}
+  @media (max-width:820px){ .look-card{position:static;} }
+  .figure{width:100%; max-width:230px; display:block; margin:0 auto 6px;}
+  .rating{display:flex; align-items:center; justify-content:center; gap:8px; margin:4px 0 14px; font-size:14px; font-weight:600;}
+  .rating .pill{padding:3px 12px; border-radius:999px; font-size:13px;}
+  .look-rows{display:flex; flex-direction:column; gap:9px;}
+  .look-row{display:flex; align-items:center; gap:11px; background:var(--card2); border-radius:11px; padding:8px 11px;}
+  .look-row .sw{width:30px; height:30px; border-radius:7px; border:1px solid rgba(255,255,255,.18); flex:none;}
+  .look-row .lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px;}
+  .look-row .val{font-size:14px; font-weight:600;}
+  .look-row .meta{margin-left:auto; text-align:right;}
+
+  /* Content panel */
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px;}
+  .panel h2{margin:0 0 4px; font-size:18px;}
+  .panel .hint{color:var(--muted); font-size:13px; margin:0 0 16px;}
+
+  /* Swatch picker grid */
+  .pick-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:12px;}
+  .pick{cursor:pointer; border-radius:12px; padding:8px; background:var(--card2); border:2px solid transparent; text-align:center; transition:.12s;}
+  .pick .chip{height:54px; border-radius:9px; border:1px solid rgba(255,255,255,.14); margin-bottom:7px;}
+  .pick .nm{font-size:12.5px; font-weight:600;}
+  .pick.active{border-color:var(--accent); background:#2e3340;}
+
+  /* Recommendation lists */
+  .rec-wrap{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:20px;}
+  @media (max-width:620px){ .rec-wrap{grid-template-columns:1fr;} }
+  .rec-col h3{font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin:0 0 10px;}
+  .rec-item{display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:11px; background:var(--card2); margin-bottom:8px; cursor:pointer; border:2px solid transparent; transition:.12s;}
+  .rec-item:hover{border-color:var(--line);}
+  .rec-item.active{border-color:var(--accent);}
+  .rec-item .sw{width:34px; height:34px; border-radius:8px; border:1px solid rgba(255,255,255,.18); flex:none;}
+  .rec-item .info{flex:1; min-width:0;}
+  .rec-item .info .nm{font-size:14px; font-weight:600;}
+  .rec-item .info .why{font-size:11.5px; color:var(--muted);}
+  .rec-item .tag{font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap;}
+  .t3{background:rgba(67,181,129,.16); color:var(--good);}
+  .t2{background:rgba(200,169,106,.16); color:var(--great);}
+  .t1{background:rgba(138,143,152,.16); color:var(--ok);}
+  .t0{background:rgba(207,106,106,.16); color:var(--avoid);}
+  .dotc3{background:var(--good);} .dotc2{background:var(--great);} .dotc1{background:var(--ok);} .dotc0{background:var(--avoid);}
+
+  .note{background:var(--card2); border-left:3px solid var(--accent); border-radius:8px; padding:11px 13px; font-size:13px; color:var(--text); margin-top:16px;}
+  .note b{color:var(--accent);}
+
+  /* Matrix */
+  .matrix-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:6px; border-radius:12px;}
+  table.matrix{border-collapse:separate; border-spacing:5px; margin:0 auto;}
+  table.matrix th, table.matrix td{padding:0;}
+  .mx-corner{font-size:11px; color:var(--muted); text-align:left; padding:0 6px !important;}
+  .mx-col{width:62px;}
+  .mx-colhead{display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .mx-colhead .chip{width:30px; height:30px; border-radius:7px; border:1px solid rgba(255,255,255,.16);}
+  .mx-colhead .t{font-size:10px; color:var(--muted); line-height:1.1; text-align:center;}
+  .mx-rowhead{display:flex; align-items:center; gap:8px; padding-right:8px;}
+  .mx-rowhead .chip{width:30px; height:30px; border-radius:7px; border:1px solid rgba(255,255,255,.16); flex:none;}
+  .mx-rowhead .t{font-size:12.5px; font-weight:600; white-space:nowrap;}
+  .mx-rowhead .star{color:var(--accent); font-size:12px;}
+  .mx-cell{width:56px; height:50px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid transparent; transition:.12s; position:relative;}
+  .mx-cell .tie{width:22px; height:22px; border-radius:50%; border:1px solid rgba(255,255,255,.35);}
+  .mx-cell.sel{border-color:#fff;}
+  .mx-row.dim{opacity:.32;}
+  .cell3{background:rgba(67,181,129,.30);}
+  .cell2{background:rgba(200,169,106,.26);}
+  .cell1{background:rgba(138,143,152,.20);}
+  .cell0{background:rgba(207,106,106,.26);}
+  .legend{display:flex; flex-wrap:wrap; gap:14px; margin-top:16px; font-size:12px; color:var(--muted);}
+  .legend .k{display:flex; align-items:center; gap:6px;}
+  .legend .b{width:16px; height:16px; border-radius:5px;}
+  .mx-help{font-size:12.5px; color:var(--muted); margin:10px 2px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Suit <span class="ac">&amp;</span> Tie — <span class="ac">Color Matcher</span></h1>
+    <p>Match suit, shirt &amp; tie to your skin tone — built on classic menswear rules.</p>
+  </header>
+
+  <!-- Skin tone -->
+  <div class="skin-bar">
+    <p class="section-title">1 · Your skin tone</p>
+    <div class="skin-grid" id="skinGrid"></div>
+  </div>
+
+  <!-- Mode tabs -->
+  <p class="section-title">2 · Start from…</p>
+  <div class="tabs" id="tabs">
+    <div class="tab" data-mode="suit">Suit</div>
+    <div class="tab" data-mode="shirt">Shirt</div>
+    <div class="tab" data-mode="tie">Tie</div>
+    <div class="tab" data-mode="skin">Skin tone</div>
+    <div class="tab" data-mode="matrix">Full matrix</div>
+  </div>
+
+  <div class="layout">
+    <!-- Live look -->
+    <div class="look-card">
+      <svg class="figure" viewBox="0 0 200 300" aria-label="Outfit preview">
+        <path id="f-jacket" d="M16,300 L30,150 Q34,106 70,95 L130,95 Q166,106 170,150 L184,300 Z" stroke="rgba(0,0,0,.35)" stroke-width="1.5"/>
+        <rect id="f-neck" x="88" y="68" width="24" height="36" rx="7"/>
+        <path id="f-shirt" d="M82,95 L118,95 L100,208 Z" stroke="rgba(0,0,0,.18)" stroke-width="1"/>
+        <path id="f-lapel-l" d="M70,95 L100,152 L100,126 L82,95 Z" stroke="rgba(0,0,0,.30)" stroke-width="1.2"/>
+        <path id="f-lapel-r" d="M130,95 L100,152 L100,126 L118,95 Z" stroke="rgba(0,0,0,.30)" stroke-width="1.2"/>
+        <path id="f-collar-l" d="M82,95 L100,126 L91,95 Z"/>
+        <path id="f-collar-r" d="M118,95 L100,126 L109,95 Z"/>
+        <path id="f-tieknot" d="M95,102 L105,102 L107,116 L93,116 Z"/>
+        <path id="f-tie" d="M93,116 L107,116 L110,182 L100,212 L90,182 Z"/>
+        <ellipse id="f-head" cx="100" cy="45" rx="29" ry="35"/>
+      </svg>
+      <div class="rating" id="rating"></div>
+      <div class="look-rows" id="lookRows"></div>
+    </div>
+
+    <!-- Dynamic panel -->
+    <div class="panel" id="panel"></div>
+  </div>
+</div>
+
+<script>
+/* ---------- DATA ---------- */
+const SKINS = [
+  {id:'fair',   name:'Fair / Light',  hex:'#f0d2bb', note:'Crisp white and soft-blue shirts flatter fair skin; bring colour in through the tie. Medium-to-dark suits give flattering contrast — avoid pale-on-pale that washes you out.'},
+  {id:'medium', name:'Medium',        hex:'#d9a980', note:'The most versatile tone — almost every suit colour works. Earth tones, blues and jewel-tone ties all sit well against medium skin.'},
+  {id:'olive',  name:'Olive / Tan',   hex:'#b07c4f', note:'Earthy suits (olive, brown, tan) and warm ties harmonise beautifully with olive skin. Cool greys can look a touch flat, so warm them up with the tie.'},
+  {id:'deep',   name:'Deep / Dark',   hex:'#6e4326', note:'Light-grey and tan suits plus bright or jewel-tone ties create a striking, flattering contrast. White and pastel shirts really pop against deep skin.'},
+];
+
+const SUITS = [
+  {id:'navy',     name:'Navy',        hex:'#20304f'},
+  {id:'charcoal', name:'Charcoal',    hex:'#3a3d42'},
+  {id:'lightgrey',name:'Light Grey',  hex:'#b9bec6'},
+  {id:'black',    name:'Black',       hex:'#1c1c1e'},
+  {id:'brown',    name:'Brown',       hex:'#5b3a29'},
+  {id:'tan',      name:'Tan / Beige', hex:'#c2a273'},
+  {id:'blue',     name:'Bright Blue', hex:'#3a5f9e'},
+  {id:'burgundy', name:'Burgundy',    hex:'#5d2433'},
+  {id:'olive',    name:'Olive',       hex:'#5c5d3a'},
+];
+
+const SHIRTS = [
+  {id:'white',    name:'White',       hex:'#fbfbf7'},
+  {id:'lightblue',name:'Light Blue',  hex:'#c5d8ec'},
+  {id:'pink',     name:'Pink',        hex:'#f2cdd3'},
+  {id:'lavender', name:'Lavender',    hex:'#d2c8e8'},
+  {id:'cream',    name:'Cream',       hex:'#f3ead2'},
+  {id:'grey',     name:'Grey',        hex:'#c7cace'},
+  {id:'black',    name:'Black',       hex:'#2a2a2c'},
+];
+
+const TIES = [
+  {id:'burgundy', name:'Burgundy',    hex:'#5d2433'},
+  {id:'navy',     name:'Navy',        hex:'#20304f'},
+  {id:'royalblue',name:'Royal Blue',  hex:'#2f4f92'},
+  {id:'silver',   name:'Silver',      hex:'#b9bec6'},
+  {id:'green',    name:'Forest Green',hex:'#234d36'},
+  {id:'pink',     name:'Pink',        hex:'#e29aa8'},
+  {id:'gold',     name:'Gold',        hex:'#c39a37'},
+  {id:'purple',   name:'Purple',      hex:'#5a3a7a'},
+  {id:'brown',    name:'Brown',       hex:'#5b3a29'},
+  {id:'black',    name:'Black',       hex:'#1c1c1e'},
+  {id:'red',      name:'Red',         hex:'#9c2330'},
+];
+
+/* score 0 avoid · 1 works · 2 great · 3 excellent. Missing pair = 1 (default). */
+const DEFAULT = 1;
+const suitShirt = {
+  navy:     {white:3, lightblue:3, pink:3, lavender:2, cream:2, grey:1, black:1},
+  charcoal: {white:3, lightblue:3, pink:2, lavender:2, grey:2, black:2, cream:1},
+  lightgrey:{white:3, lightblue:3, pink:3, lavender:3, cream:2, black:2, grey:1},
+  black:    {white:3, black:2, grey:2, lightblue:1, pink:1, lavender:1, cream:1},
+  brown:    {cream:3, lightblue:3, white:2, pink:2, lavender:1, grey:1, black:1},
+  tan:      {white:3, lightblue:3, pink:2, lavender:2, cream:2, grey:1, black:1},
+  blue:     {white:3, pink:3, lightblue:2, lavender:2, cream:2, grey:2, black:1},
+  burgundy: {white:3, grey:3, lightblue:2, cream:2, black:2, pink:1, lavender:1},
+  olive:    {white:3, cream:3, lightblue:2, pink:2, lavender:1, grey:1, black:1},
+};
+const suitTie = {
+  navy:     {burgundy:3, red:3, silver:2, royalblue:2, green:2, gold:2, pink:2, purple:2, brown:2, navy:1, black:1},
+  charcoal: {silver:3, burgundy:3, red:3, royalblue:2, purple:2, navy:2, green:2, black:2, pink:2, gold:1, brown:1},
+  lightgrey:{navy:3, burgundy:3, royalblue:3, pink:2, green:2, purple:2, gold:2, red:2, black:2, silver:1, brown:1},
+  black:    {silver:3, black:3, red:2, burgundy:2, purple:2, navy:1, royalblue:1, green:1, gold:1, pink:1, brown:0},
+  brown:    {green:3, gold:3, brown:2, burgundy:2, royalblue:2, navy:2, red:2, pink:2, silver:1, purple:1, black:1},
+  tan:      {brown:3, navy:3, green:3, burgundy:3, gold:2, royalblue:2, red:2, pink:2, silver:1, purple:1, black:1},
+  blue:     {navy:3, burgundy:3, brown:2, pink:2, silver:2, green:2, gold:2, red:2, purple:2, royalblue:1, black:1},
+  burgundy: {navy:3, silver:3, gold:2, green:2, pink:2, royalblue:2, brown:2, black:2, purple:2, burgundy:1, red:1},
+  olive:    {brown:3, burgundy:3, gold:2, navy:2, red:2, royalblue:2, pink:2, green:1, silver:1, purple:1, black:1},
+};
+const shirtTie = {
+  white:    {burgundy:3, navy:3, red:3, green:3, royalblue:3, black:3, silver:2, gold:2, purple:2, brown:2, pink:2},
+  lightblue:{navy:3, burgundy:3, pink:3, royalblue:2, silver:2, green:2, gold:2, brown:2, purple:2, red:2, black:1},
+  pink:     {navy:3, burgundy:3, silver:3, purple:2, green:2, royalblue:2, brown:2, gold:1, pink:1, black:1, red:1},
+  lavender: {purple:3, silver:3, navy:2, burgundy:2, royalblue:2, pink:2, gold:1, green:1, brown:1, red:1, black:1},
+  cream:    {brown:3, green:3, gold:3, burgundy:2, navy:2, red:2, purple:2, royalblue:1, silver:1, pink:1, black:1},
+  grey:     {burgundy:3, navy:3, royalblue:2, purple:2, green:2, pink:2, red:2, black:2, gold:2, brown:1, silver:1},
+  black:    {silver:3, black:3, red:2, burgundy:2, purple:2, gold:2, royalblue:1, navy:1, green:1, pink:1, brown:0},
+};
+const skinSuit = {
+  fair:   {navy:3, charcoal:3, blue:3, burgundy:3, black:2, brown:2, olive:2, lightgrey:2, tan:1},
+  medium: {navy:3, charcoal:3, lightgrey:3, blue:3, brown:3, olive:3, burgundy:3, tan:2, black:2},
+  olive:  {olive:3, brown:3, tan:3, navy:3, blue:3, burgundy:3, charcoal:2, lightgrey:2, black:2},
+  deep:   {lightgrey:3, tan:3, blue:3, navy:3, charcoal:3, burgundy:3, olive:2, brown:2, black:2},
+};
+
+/* ---------- HELPERS ---------- */
+const byId = (arr,id)=>arr.find(x=>x.id===id);
+const sc = (tbl,a,b)=> (tbl[a] && tbl[a][b]!==undefined) ? tbl[a][b] : DEFAULT;
+const TIER = {3:'Excellent',2:'Great',1:'Works',0:'Avoid'};
+const WHY  = {
+  3:'A standout, classic pairing.',
+  2:'A strong, reliable choice.',
+  1:'Acceptable — fine in a pinch.',
+  0:'Tones clash — best avoided.'
+};
+
+function bestTie(suitId, shirtId){
+  let best=null, bestScore=-1;
+  TIES.forEach(t=>{
+    const s = sc(suitTie,suitId,t.id) + sc(shirtTie,shirtId,t.id);
+    if(s>bestScore){bestScore=s; best=t.id;}
+  });
+  return best;
+}
+function rankList(items, scoreFn){
+  return items.map((x,i)=>({item:x, score:scoreFn(x), order:i}))
+              .sort((a,b)=> b.score-a.score || a.order-b.order);
+}
+
+/* ---------- STATE ---------- */
+const state = {
+  skin:'medium',
+  mode:'suit',
+  suit:'navy',
+  shirt:'white',
+  tie:'burgundy',
+};
+
+/* ---------- FIGURE + LOOK BAR ---------- */
+function setFill(id,hex){ const el=document.getElementById(id); if(el) el.setAttribute('fill',hex); }
+function renderFigure(){
+  const suit=byId(SUITS,state.suit), shirt=byId(SHIRTS,state.shirt),
+        tie=byId(TIES,state.tie), skin=byId(SKINS,state.skin);
+  const suitHex = suit?suit.hex:'#444';
+  setFill('f-jacket',suitHex); setFill('f-lapel-l',suitHex); setFill('f-lapel-r',suitHex);
+  const shirtHex = shirt?shirt.hex:'#eee';
+  setFill('f-shirt',shirtHex); setFill('f-collar-l',shirtHex); setFill('f-collar-r',shirtHex);
+  const tieHex = tie?tie.hex:'#888';
+  setFill('f-tie',tieHex); setFill('f-tieknot',tieHex);
+  const skinHex = skin?skin.hex:'#d9a980';
+  setFill('f-head',skinHex); setFill('f-neck',skinHex);
+}
+function overallRating(){
+  const parts=[];
+  if(state.skin&&state.suit) parts.push(sc(skinSuit,state.skin,state.suit));
+  if(state.suit&&state.shirt) parts.push(sc(suitShirt,state.suit,state.shirt));
+  if(state.suit&&state.tie) parts.push(sc(suitTie,state.suit,state.tie));
+  if(state.shirt&&state.tie) parts.push(sc(shirtTie,state.shirt,state.tie));
+  if(!parts.length) return {avg:0,label:'—',cls:'t1'};
+  const avg=parts.reduce((a,b)=>a+b,0)/parts.length;
+  let label,cls;
+  if(avg>=2.5){label='Excellent look';cls='t3';}
+  else if(avg>=1.8){label='Great look';cls='t2';}
+  else if(avg>=1.05){label='Solid look';cls='t1';}
+  else {label='Reconsider';cls='t0';}
+  return {avg,label,cls};
+}
+function renderLookBar(){
+  const r=overallRating();
+  document.getElementById('rating').innerHTML =
+    `<span>Overall:</span><span class="pill ${r.cls}">${r.label}</span>`;
+  const rows=[
+    ['Skin', byId(SKINS,state.skin)],
+    ['Suit', byId(SUITS,state.suit)],
+    ['Shirt',byId(SHIRTS,state.shirt)],
+    ['Tie',  byId(TIES,state.tie)],
+  ];
+  document.getElementById('lookRows').innerHTML = rows.map(([lbl,obj])=>`
+    <div class="look-row">
+      <div class="sw" style="background:${obj?obj.hex:'#333'}"></div>
+      <div><div class="lbl">${lbl}</div><div class="val">${obj?obj.name:'—'}</div></div>
+    </div>`).join('');
+}
+
+/* ---------- SKIN BAR + TABS ---------- */
+function renderSkin(){
+  document.getElementById('skinGrid').innerHTML = SKINS.map(s=>`
+    <div class="skin-opt ${state.skin===s.id?'active':''}" data-skin="${s.id}">
+      <div class="dot" style="background:${s.hex}"></div>
+      <span>${s.name}</span>
+    </div>`).join('');
+}
+function renderTabs(){
+  [...document.querySelectorAll('.tab')].forEach(t=>{
+    t.classList.toggle('active', t.dataset.mode===state.mode);
+  });
+}
+
+/* ---------- REC ITEM TEMPLATE ---------- */
+function recItem(obj, score, activeId){
+  const cls = activeId===obj.id?'active':'';
+  return `<div class="rec-item ${cls}" data-recid="${obj.id}">
+    <div class="sw" style="background:${obj.hex}"></div>
+    <div class="info"><div class="nm">${obj.name}</div><div class="why">${WHY[score]}</div></div>
+    <div class="tag t${score}">${TIER[score]}</div>
+  </div>`;
+}
+function pickGrid(items, activeId){
+  return `<div class="pick-grid">`+items.map(o=>`
+    <div class="pick ${activeId===o.id?'active':''}" data-pickid="${o.id}">
+      <div class="chip" style="background:${o.hex}"></div>
+      <div class="nm">${o.name}</div>
+    </div>`).join('')+`</div>`;
+}
+
+/* ---------- PANEL RENDER ---------- */
+function renderPanel(){
+  const p=document.getElementById('panel');
+  if(state.mode==='suit')   return renderFromSuit(p);
+  if(state.mode==='shirt')  return renderFromShirt(p);
+  if(state.mode==='tie')    return renderFromTie(p);
+  if(state.mode==='skin')   return renderFromSkin(p);
+  if(state.mode==='matrix') return renderMatrix(p);
+}
+
+function renderFromSuit(p){
+  const skin=byId(SKINS,state.skin);
+  const shirtsRanked = rankList(SHIRTS, sh=>sc(suitShirt,state.suit,sh.id));
+  const tiesRanked   = rankList(TIES,   t=>sc(suitTie,state.suit,t.id)+sc(shirtTie,state.shirt,t.id)*0.5);
+  p.innerHTML = `
+    <h2>Pick your suit</h2>
+    <p class="hint">Choose a suit colour and we'll recommend the shirt and tie that complete it.</p>
+    ${pickGrid(SUITS, state.suit)}
+    <div class="rec-wrap">
+      <div class="rec-col">
+        <h3>Best shirts</h3>
+        ${shirtsRanked.filter(r=>r.score>=1).map(r=>recItem(r.item,r.score,state.shirt)).join('')}
+      </div>
+      <div class="rec-col">
+        <h3>Best ties</h3>
+        ${tiesRanked.filter(r=>sc(suitTie,state.suit,r.item.id)>=1).map(r=>recItem(r.item,sc(suitTie,state.suit,r.item.id),state.tie)).join('')}
+      </div>
+    </div>
+    <div class="note"><b>${skin.name} skin:</b> ${skin.note}</div>`;
+}
+
+function renderFromShirt(p){
+  const skin=byId(SKINS,state.skin);
+  const suitsRanked = rankList(SUITS, su=>sc(suitShirt,su.id,state.shirt)+ (skin?sc(skinSuit,skin.id,su.id):0)*0.5);
+  const tiesRanked  = rankList(TIES,  t=>sc(shirtTie,state.shirt,t.id));
+  p.innerHTML = `
+    <h2>Pick your shirt</h2>
+    <p class="hint">Choose a shirt colour and we'll recommend the suit and tie to build around it.</p>
+    ${pickGrid(SHIRTS, state.shirt)}
+    <div class="rec-wrap">
+      <div class="rec-col">
+        <h3>Best suits</h3>
+        ${suitsRanked.filter(r=>sc(suitShirt,r.item.id,state.shirt)>=1).map(r=>recItem(r.item,sc(suitShirt,r.item.id,state.shirt),state.suit)).join('')}
+      </div>
+      <div class="rec-col">
+        <h3>Best ties</h3>
+        ${tiesRanked.filter(r=>r.score>=1).map(r=>recItem(r.item,r.score,state.tie)).join('')}
+      </div>
+    </div>
+    <div class="note"><b>${skin.name} skin:</b> ${skin.note}</div>`;
+}
+
+function renderFromTie(p){
+  const skin=byId(SKINS,state.skin);
+  const suitsRanked  = rankList(SUITS,  su=>sc(suitTie,su.id,state.tie));
+  const shirtsRanked = rankList(SHIRTS, sh=>sc(shirtTie,sh.id,state.tie));
+  p.innerHTML = `
+    <h2>Pick your tie</h2>
+    <p class="hint">Already have a favourite tie? See which suits and shirts it loves.</p>
+    ${pickGrid(TIES, state.tie)}
+    <div class="rec-wrap">
+      <div class="rec-col">
+        <h3>Best suits</h3>
+        ${suitsRanked.filter(r=>r.score>=1).map(r=>recItem(r.item,r.score,state.suit)).join('')}
+      </div>
+      <div class="rec-col">
+        <h3>Best shirts</h3>
+        ${shirtsRanked.filter(r=>r.score>=1).map(r=>recItem(r.item,r.score,state.shirt)).join('')}
+      </div>
+    </div>
+    <div class="note"><b>${skin.name} skin:</b> ${skin.note}</div>`;
+}
+
+function renderFromSkin(p){
+  const skin=byId(SKINS,state.skin);
+  const suitsRanked = rankList(SUITS, su=>sc(skinSuit,state.skin,su.id));
+  p.innerHTML = `
+    <h2>Suits for ${skin.name.toLowerCase()} skin</h2>
+    <p class="hint">These suit colours flatter your skin tone most. Tap one to jump into building the full look.</p>
+    <div class="note" style="margin:0 0 16px;"><b>${skin.name} skin:</b> ${skin.note}</div>
+    <div class="rec-wrap">
+      <div class="rec-col">
+        <h3>Best suits for you</h3>
+        ${suitsRanked.map(r=>recItem(r.item,r.score,state.suit)).join('')}
+      </div>
+      <div class="rec-col">
+        <h3>Then build the look</h3>
+        ${pickGrid(SUITS, state.suit)}
+      </div>
+    </div>`;
+}
+
+function renderMatrix(p){
+  let head = `<tr><th class="mx-corner">Suit&nbsp;\\&nbsp;Shirt</th>`;
+  SHIRTS.forEach(sh=>{
+    head += `<th class="mx-col"><div class="mx-colhead">
+      <div class="chip" style="background:${sh.hex}"></div>
+      <div class="t">${sh.name}</div></div></th>`;
+  });
+  head += `</tr>`;
+
+  let body='';
+  SUITS.forEach(su=>{
+    const skinScore = sc(skinSuit,state.skin,su.id);
+    const dim = skinScore<2 ? 'dim':'';
+    const star = skinScore===3 ? '<span class="star">★</span>':'';
+    body += `<tr class="mx-row ${dim}"><td>
+      <div class="mx-rowhead"><div class="chip" style="background:${su.hex}"></div>
+      <div class="t">${su.name} ${star}</div></div></td>`;
+    SHIRTS.forEach(sh=>{
+      const s = sc(suitShirt,su.id,sh.id);
+      const tieId = bestTie(su.id,sh.id);
+      const tie = byId(TIES,tieId);
+      const selCls = (state.suit===su.id && state.shirt===sh.id)?'sel':'';
+      body += `<td><div class="mx-cell cell${s} ${selCls}" data-su="${su.id}" data-sh="${sh.id}" data-tie="${tieId}">
+        <div class="tie" style="background:${tie.hex}" title="${tie.name} tie"></div></div></td>`;
+    });
+    body += `</tr>`;
+  });
+
+  p.innerHTML = `
+    <h2>The full matrix</h2>
+    <p class="hint">Rows = suit, columns = shirt. Each dot is the best tie for that pairing. Cell colour rates the suit + shirt match.</p>
+    <div class="matrix-scroll"><table class="matrix">${head}${body}</table></div>
+    <div class="legend">
+      <div class="k"><span class="b cell3"></span>Excellent</div>
+      <div class="k"><span class="b cell2"></span>Great</div>
+      <div class="k"><span class="b cell1"></span>Works</div>
+      <div class="k"><span class="b cell0"></span>Avoid</div>
+      <div class="k"><span class="star" style="color:var(--accent)">★</span>= best for ${byId(SKINS,state.skin).name.toLowerCase()} skin</div>
+    </div>
+    <p class="mx-help">Faded rows are suit colours that suit your skin tone less well. Tap any cell to load that combination into your live look.</p>`;
+}
+
+/* ---------- EVENTS ---------- */
+function rerender(){ renderSkin(); renderTabs(); renderPanel(); renderFigure(); renderLookBar(); }
+
+document.getElementById('skinGrid').addEventListener('click',e=>{
+  const el=e.target.closest('[data-skin]'); if(!el) return;
+  state.skin=el.dataset.skin; rerender();
+});
+document.getElementById('tabs').addEventListener('click',e=>{
+  const el=e.target.closest('[data-mode]'); if(!el) return;
+  state.mode=el.dataset.mode; rerender();
+});
+document.getElementById('panel').addEventListener('click',e=>{
+  // matrix cell
+  const cell=e.target.closest('[data-su]');
+  if(cell){ state.suit=cell.dataset.su; state.shirt=cell.dataset.sh; state.tie=cell.dataset.tie;
+    renderPanel(); renderFigure(); renderLookBar(); return; }
+  // picker chip
+  const pick=e.target.closest('[data-pickid]');
+  if(pick){
+    const id=pick.dataset.pickid;
+    if(state.mode==='suit'){ state.suit=id;
+      state.shirt=rankList(SHIRTS,sh=>sc(suitShirt,id,sh.id))[0].item.id;
+      state.tie=bestTie(state.suit,state.shirt); }
+    else if(state.mode==='shirt'){ state.shirt=id;
+      state.suit=rankList(SUITS,su=>sc(suitShirt,su.id,id)+sc(skinSuit,state.skin,su.id)*0.5)[0].item.id;
+      state.tie=bestTie(state.suit,state.shirt); }
+    else if(state.mode==='tie'){ state.tie=id;
+      state.suit=rankList(SUITS,su=>sc(suitTie,su.id,id))[0].item.id;
+      state.shirt=rankList(SHIRTS,sh=>sc(suitShirt,state.suit,sh.id)+sc(shirtTie,sh.id,id)*0.5)[0].item.id; }
+    else if(state.mode==='skin'){ state.suit=id;
+      state.shirt=rankList(SHIRTS,sh=>sc(suitShirt,id,sh.id))[0].item.id;
+      state.tie=bestTie(state.suit,state.shirt); }
+    renderPanel(); renderFigure(); renderLookBar(); return;
+  }
+  // recommendation row
+  const rec=e.target.closest('[data-recid]');
+  if(rec){
+    const id=rec.dataset.recid, col=rec.closest('.rec-col').querySelector('h3').textContent;
+    if(col.includes('suit')) state.suit=id;
+    else if(col.includes('shirt')) state.shirt=id;
+    else if(col.includes('tie')) state.tie=id;
+    renderPanel(); renderFigure(); renderLookBar();
+  }
+});
+
+/* ---------- INIT ---------- */
+state.mode='suit';
+document.querySelector('.tab[data-mode="suit"]').classList.add('active');
+rerender();
+</script>
+</body>
+</html>
